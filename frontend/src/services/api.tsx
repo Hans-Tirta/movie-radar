@@ -68,51 +68,89 @@ export const searchMovies = async (
   query: string,
   filters?: SearchFilters
 ): Promise<Movie[]> => {
-  // Build the search URL with filters
-  let searchUrl = `${BASE_URL}search/movie?api_key=${API_KEY}`;
+  let searchUrl: string;
 
-  // Add search query if provided
+  // If there's a search query, use search endpoint
   if (query.trim()) {
-    searchUrl += `&query=${encodeURIComponent(query)}`;
-  }
+    searchUrl = `${BASE_URL}search/movie?api_key=${API_KEY}&query=${encodeURIComponent(
+      query
+    )}`;
 
-  // If no search query but filters are applied, use discover endpoint instead
-  if (
-    !query.trim() &&
-    filters &&
-    (filters.selectedGenres.length > 0 || filters.sortBy !== "popularity.desc")
-  ) {
+    // Add sorting to search results (limited options available)
+    if (filters?.sortBy) {
+      // Note: search endpoint has limited sort options
+      searchUrl += `&sort_by=${filters.sortBy}`;
+    }
+  } else {
+    // If no search query, use discover endpoint for filtering only
     searchUrl = `${BASE_URL}discover/movie?api_key=${API_KEY}`;
   }
 
-  // Add genre filters
+  // Add genre filters (works with both endpoints)
   if (filters?.selectedGenres && filters.selectedGenres.length > 0) {
     searchUrl += `&with_genres=${filters.selectedGenres.join(",")}`;
   }
 
-  // Add sort parameter
-  if (filters?.sortBy) {
+  // Add sort for discover endpoint
+  if (!query.trim() && filters?.sortBy) {
     searchUrl += `&sort_by=${filters.sortBy}`;
   }
 
-  // Additional parameters for better results
-  searchUrl += `&include_adult=false&include_video=false&page=1`;
+  // Fetch and process results
+  const [response, genres] = await Promise.all([fetch(searchUrl), getGenres()]);
 
-  const [searchResponse, genres] = await Promise.all([
-    fetch(searchUrl),
-    getGenres(),
-  ]);
+  const data = await response.json();
 
-  if (!searchResponse.ok) {
-    throw new Error("Failed to fetch movies");
+  // If using search endpoint with genre filters, we need to filter results manually
+  let filteredResults = data.results;
+
+  if (
+    query.trim() &&
+    filters?.selectedGenres &&
+    filters.selectedGenres.length > 0
+  ) {
+    // Manual filtering for search results
+    filteredResults = data.results.filter((movie: Movie) =>
+      movie.genre_ids.some((genreId) =>
+        filters.selectedGenres.includes(genreId)
+      )
+    );
   }
 
-  const searchData = await searchResponse.json();
-  console.log("API Response:", searchData);
-  console.log("Search URL:", searchUrl);
+  // Manual sorting for search results if needed
+  if (query.trim() && filters?.sortBy) {
+    filteredResults = [...filteredResults].sort((a: Movie, b: Movie) => {
+      switch (filters.sortBy) {
+        case "title.asc":
+          return a.title.localeCompare(b.title);
+        case "title.desc":
+          return b.title.localeCompare(a.title);
+        case "release_date.desc":
+          return (
+            new Date(b.release_date).getTime() -
+            new Date(a.release_date).getTime()
+          );
+        case "release_date.asc":
+          return (
+            new Date(a.release_date).getTime() -
+            new Date(b.release_date).getTime()
+          );
+        case "vote_average.desc":
+          return b.vote_average - a.vote_average;
+        case "vote_average.asc":
+          return a.vote_average - b.vote_average;
+        case "popularity.desc":
+          return b.popularity - a.popularity;
+        case "popularity.asc":
+          return a.popularity - b.popularity;
+        default:
+          return 0;
+      }
+    });
+  }
 
-  // Map genre IDs to names for each movie
-  const moviesWithGenres = searchData.results.map((movie: Movie) => ({
+  // Map genre IDs to names
+  const moviesWithGenres = filteredResults.map((movie: Movie) => ({
     ...movie,
     genres: mapGenreIdsToNames(movie.genre_ids, genres),
   }));
