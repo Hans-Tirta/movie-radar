@@ -1,3 +1,5 @@
+import { SearchFilters } from "../components/SearchBar";
+
 const API_KEY = import.meta.env.VITE_API_KEY;
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -62,18 +64,52 @@ export const getPopularMovies = async (): Promise<Movie[]> => {
   return moviesWithGenres;
 };
 
-export const searchMovies = async (query: string): Promise<Movie[]> => {
+export const searchMovies = async (
+  query: string,
+  filters?: SearchFilters
+): Promise<Movie[]> => {
+  // Build the search URL with filters
+  let searchUrl = `${BASE_URL}search/movie?api_key=${API_KEY}`;
+
+  // Add search query if provided
+  if (query.trim()) {
+    searchUrl += `&query=${encodeURIComponent(query)}`;
+  }
+
+  // If no search query but filters are applied, use discover endpoint instead
+  if (
+    !query.trim() &&
+    filters &&
+    (filters.selectedGenres.length > 0 || filters.sortBy !== "popularity.desc")
+  ) {
+    searchUrl = `${BASE_URL}discover/movie?api_key=${API_KEY}`;
+  }
+
+  // Add genre filters
+  if (filters?.selectedGenres && filters.selectedGenres.length > 0) {
+    searchUrl += `&with_genres=${filters.selectedGenres.join(",")}`;
+  }
+
+  // Add sort parameter
+  if (filters?.sortBy) {
+    searchUrl += `&sort_by=${filters.sortBy}`;
+  }
+
+  // Additional parameters for better results
+  searchUrl += `&include_adult=false&include_video=false&page=1`;
+
   const [searchResponse, genres] = await Promise.all([
-    fetch(
-      `${BASE_URL}search/movie?api_key=${API_KEY}&query=${encodeURIComponent(
-        query
-      )}`
-    ),
+    fetch(searchUrl),
     getGenres(),
   ]);
 
+  if (!searchResponse.ok) {
+    throw new Error("Failed to fetch movies");
+  }
+
   const searchData = await searchResponse.json();
   console.log("API Response:", searchData);
+  console.log("Search URL:", searchUrl);
 
   // Map genre IDs to names for each movie
   const moviesWithGenres = searchData.results.map((movie: Movie) => ({
