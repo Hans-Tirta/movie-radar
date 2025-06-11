@@ -1,25 +1,44 @@
-import { SearchFilters } from "../components/SearchBar";
-
 const API_KEY = import.meta.env.VITE_API_KEY;
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 interface Movie {
   id: number;
   title: string;
-  release_date: string;
-  poster_path: string | null;
-  overview: string;
-  vote_average: number;
-  vote_count: number;
-  popularity: number;
-  adult: boolean;
-  genre_ids: number[];
+  release_date?: string;
+  poster_path?: string | null;
+  overview?: string;
+  vote_average?: number;
+  vote_count?: number;
+  popularity?: number;
+  adult?: boolean;
+  genre_ids?: number[];
   genres?: string[];
 }
 
 interface Genre {
   id: number;
   name: string;
+}
+
+interface APIResponse {
+  page: number;
+  results: Movie[];
+  total_pages: number;
+  total_results: number;
+}
+
+// Define filters interface to match your Home component
+export interface DiscoverFilters {
+  selectedGenres: number[];
+  sortBy:
+    | "popularity.desc"
+    | "popularity.asc"
+    | "release_date.desc"
+    | "release_date.asc"
+    | "vote_average.desc"
+    | "vote_average.asc"
+    | "title.asc"
+    | "title.desc";
 }
 
 // Cache genres to avoid repeated API calls
@@ -30,130 +49,180 @@ export const getGenres = async (): Promise<Genre[]> => {
     return genreCache;
   }
 
-  const response = await fetch(
-    `${BASE_URL}genre/movie/list?api_key=${API_KEY}`
-  );
-  const data = await response.json();
-  genreCache = data.genres;
-  return data.genres;
+  try {
+    const response = await fetch(
+      `${BASE_URL}genre/movie/list?api_key=${API_KEY}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    genreCache = data.genres;
+    return data.genres;
+  } catch (error) {
+    console.error("Error fetching genres:", error);
+    throw new Error("Failed to fetch genres");
+  }
 };
 
 // Helper function to map genre IDs to names
-const mapGenreIdsToNames = (genreIds: number[], genres: Genre[]): string[] => {
-  return genreIds.map((id) => {
-    const genre = genres.find((g) => g.id === id);
-    return genre ? genre.name : "Unknown";
-  });
+const mapGenreIdsToNames = (
+  genreIds: number[] = [],
+  genres: Genre[]
+): string[] => {
+  if (!genreIds || genreIds.length === 0) return [];
+
+  return genreIds
+    .map((id) => {
+      const genre = genres.find((g) => g.id === id);
+      return genre ? genre.name : "Unknown";
+    })
+    .filter((name) => name !== "Unknown"); // Remove unknown genres
 };
 
-export const getPopularMovies = async (): Promise<Movie[]> => {
-  const [moviesResponse, genres] = await Promise.all([
-    fetch(`${BASE_URL}movie/popular?api_key=${API_KEY}`),
-    getGenres(),
-  ]);
-
-  const moviesData = await moviesResponse.json();
-  console.log("API Response:", moviesData);
-
-  // Map genre IDs to names for each movie
-  const moviesWithGenres = moviesData.results.map((movie: Movie) => ({
-    ...movie,
+// Helper function to ensure movie has all required properties
+const sanitizeMovie = (movie: any, genres: Genre[]): Movie => {
+  return {
+    id: movie.id || 0,
+    title: movie.title || "Unknown Title",
+    release_date: movie.release_date || "",
+    overview: movie.overview || "",
+    poster_path: movie.poster_path || null,
+    vote_average: movie.vote_average || 0,
+    vote_count: movie.vote_count || 0,
+    popularity: movie.popularity || 0,
+    adult: movie.adult || false,
+    genre_ids: movie.genre_ids || [],
     genres: mapGenreIdsToNames(movie.genre_ids, genres),
-  }));
-
-  return moviesWithGenres;
+  };
 };
 
+// Get popular movies (used for Home page default state)
+export const getPopularMovies = async (
+  page: number = 1
+): Promise<APIResponse> => {
+  try {
+    const [moviesResponse, genres] = await Promise.all([
+      fetch(`${BASE_URL}movie/popular?api_key=${API_KEY}&page=${page}`),
+      getGenres(),
+    ]);
+
+    if (!moviesResponse.ok) {
+      throw new Error(`HTTP error! status: ${moviesResponse.status}`);
+    }
+
+    const moviesData = await moviesResponse.json();
+    console.log("Popular Movies API Response:", moviesData);
+
+    // Sanitize and map genre IDs to names for each movie
+    const moviesWithGenres = (moviesData.results || []).map((movie: any) =>
+      sanitizeMovie(movie, genres)
+    );
+
+    return {
+      page: moviesData.page || 1,
+      results: moviesWithGenres,
+      total_pages: Math.min(moviesData.total_pages || 1, 500), // TMDB limits to 500 pages
+      total_results: moviesData.total_results || 0,
+    };
+  } catch (error) {
+    console.error("Error fetching popular movies:", error);
+    throw new Error("Failed to fetch popular movies");
+  }
+};
+
+// Discover movies with filters (used for Home page filtering)
+export const discoverMovies = async (
+  filters: DiscoverFilters,
+  page: number = 1
+): Promise<APIResponse> => {
+  try {
+    let discoverUrl = `${BASE_URL}discover/movie?api_key=${API_KEY}&page=${page}`;
+
+    // Add genre filters
+    if (filters.selectedGenres && filters.selectedGenres.length > 0) {
+      discoverUrl += `&with_genres=${filters.selectedGenres.join(",")}`;
+    }
+
+    // Add sorting
+    if (filters.sortBy) {
+      discoverUrl += `&sort_by=${filters.sortBy}`;
+    }
+
+    console.log("Discover URL:", discoverUrl);
+
+    const [response, genres] = await Promise.all([
+      fetch(discoverUrl),
+      getGenres(),
+    ]);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Discover Movies API Response:", data);
+
+    // Sanitize movies and map genre IDs to names
+    const moviesWithGenres = (data.results || []).map((movie: any) =>
+      sanitizeMovie(movie, genres)
+    );
+
+    return {
+      page: data.page || 1,
+      results: moviesWithGenres,
+      total_pages: Math.min(data.total_pages || 1, 500), // TMDB limits to 500 pages
+      total_results: data.total_results || 0,
+    };
+  } catch (error) {
+    console.error("Error discovering movies:", error);
+    throw new Error("Failed to discover movies");
+  }
+};
+
+// Search movies by text query (used for Search page only)
 export const searchMovies = async (
   query: string,
-  filters?: SearchFilters
-): Promise<Movie[]> => {
-  let searchUrl: string;
-
-  // If there's a search query, use search endpoint
-  if (query.trim()) {
-    searchUrl = `${BASE_URL}search/movie?api_key=${API_KEY}&query=${encodeURIComponent(
-      query
-    )}`;
-
-    // Add sorting to search results (limited options available)
-    if (filters?.sortBy) {
-      // Note: search endpoint has limited sort options
-      searchUrl += `&sort_by=${filters.sortBy}`;
+  page: number = 1
+): Promise<APIResponse> => {
+  try {
+    if (!query.trim()) {
+      throw new Error("Search query cannot be empty");
     }
-  } else {
-    // If no search query, use discover endpoint for filtering only
-    searchUrl = `${BASE_URL}discover/movie?api_key=${API_KEY}`;
-  }
 
-  // Add genre filters (works with both endpoints)
-  if (filters?.selectedGenres && filters.selectedGenres.length > 0) {
-    searchUrl += `&with_genres=${filters.selectedGenres.join(",")}`;
-  }
+    const searchUrl = `${BASE_URL}search/movie?api_key=${API_KEY}&query=${encodeURIComponent(
+      query.trim()
+    )}&page=${page}`;
 
-  // Add sort for discover endpoint
-  if (!query.trim() && filters?.sortBy) {
-    searchUrl += `&sort_by=${filters.sortBy}`;
-  }
+    console.log("Search URL:", searchUrl);
 
-  // Fetch and process results
-  const [response, genres] = await Promise.all([fetch(searchUrl), getGenres()]);
+    const [response, genres] = await Promise.all([
+      fetch(searchUrl),
+      getGenres(),
+    ]);
 
-  const data = await response.json();
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
 
-  // If using search endpoint with genre filters, we need to filter results manually
-  let filteredResults = data.results;
+    const data = await response.json();
+    console.log("Search Movies API Response:", data);
 
-  if (
-    query.trim() &&
-    filters?.selectedGenres &&
-    filters.selectedGenres.length > 0
-  ) {
-    // Manual filtering for search results
-    filteredResults = data.results.filter((movie: Movie) =>
-      movie.genre_ids.some((genreId) =>
-        filters.selectedGenres.includes(genreId)
-      )
+    // Sanitize movies and map genre IDs to names
+    const moviesWithGenres = (data.results || []).map((movie: any) =>
+      sanitizeMovie(movie, genres)
     );
+
+    return {
+      page: data.page || 1,
+      results: moviesWithGenres,
+      total_pages: Math.min(data.total_pages || 1, 500), // TMDB limits to 500 pages
+      total_results: data.total_results || 0,
+    };
+  } catch (error) {
+    console.error("Error searching movies:", error);
+    throw new Error("Failed to search movies");
   }
-
-  // Manual sorting for search results if needed
-  if (query.trim() && filters?.sortBy) {
-    filteredResults = [...filteredResults].sort((a: Movie, b: Movie) => {
-      switch (filters.sortBy) {
-        case "title.asc":
-          return a.title.localeCompare(b.title);
-        case "title.desc":
-          return b.title.localeCompare(a.title);
-        case "release_date.desc":
-          return (
-            new Date(b.release_date).getTime() -
-            new Date(a.release_date).getTime()
-          );
-        case "release_date.asc":
-          return (
-            new Date(a.release_date).getTime() -
-            new Date(b.release_date).getTime()
-          );
-        case "vote_average.desc":
-          return b.vote_average - a.vote_average;
-        case "vote_average.asc":
-          return a.vote_average - b.vote_average;
-        case "popularity.desc":
-          return b.popularity - a.popularity;
-        case "popularity.asc":
-          return a.popularity - b.popularity;
-        default:
-          return 0;
-      }
-    });
-  }
-
-  // Map genre IDs to names
-  const moviesWithGenres = filteredResults.map((movie: Movie) => ({
-    ...movie,
-    genres: mapGenreIdsToNames(movie.genre_ids, genres),
-  }));
-
-  return moviesWithGenres;
 };

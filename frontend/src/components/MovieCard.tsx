@@ -31,6 +31,19 @@ function MovieCard({
   const { isFavorite, addToFavorites, removeFromFavorites } = useMovieContext();
   const [loading, setLoading] = useState(false);
   const favorite = isFavorite(id);
+  // Add these safe checks:
+  const safeVoteAverage =
+    typeof voteAverage === "number" && voteAverage > 0
+      ? voteAverage.toFixed(1)
+      : "N/A";
+  const safeVoteCount =
+    typeof voteCount === "number" && voteCount > 0
+      ? voteCount.toLocaleString()
+      : 0;
+  const safePopularity =
+    typeof popularity === "number" && popularity > 0
+      ? popularity.toFixed(1)
+      : "N/A";
 
   const onFavoriteClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
@@ -78,18 +91,21 @@ function MovieCard({
     <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
       <div className="flex h-72 sm:h-64">
         {/* Left Side - Movie Poster */}
-        <div className="w-auto sm:w-auto   flex-shrink-0">
-          <img
-            src={
-              posterPath
-                ? `https://image.tmdb.org/t/p/w300${posterPath}`
-                : "placeholder.jpg"
-            }
-            alt={title}
-            className="w-full h-full object-cover"
-          />
+        <div className="w-48 sm:w-40 flex-shrink-0 bg-gray-700 flex items-center justify-center">
+          {posterPath ? (
+            <img
+              src={`https://image.tmdb.org/t/p/w300${posterPath}`}
+              alt={title}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-500">
+              <span className="text-sm text-center px-2">
+                No Image Available
+              </span>
+            </div>
+          )}
         </div>
-
         {/* Right Side - Movie Information */}
         <div className="flex-1 p-4 flex flex-col">
           {/* Header - Title and Favorite Button */}
@@ -167,23 +183,18 @@ function MovieCard({
               </div>
               <div className="flex items-center gap-1 text-yellow-400">
                 <Star size={14} className="fill-yellow-400" />
-                <span className="font-medium">{voteAverage.toFixed(2)}</span>
+                <span className="font-medium">{safeVoteAverage}</span>
               </div>
             </div>
-
             {/* Additional Stats Row */}
             <div className="flex items-center justify-between text-xs text-gray-400">
-              {voteCount && (
-                <div className="flex items-center gap-1">
-                  <Users size={12} />
-                  <span>{voteCount.toLocaleString()} votes</span>
-                </div>
-              )}
-              {popularity && (
-                <div className="flex items-center gap-1">
-                  <span>Popularity: {Math.round(popularity)}</span>
-                </div>
-              )}
+              <div className="flex items-center gap-1">
+                <Users size={12} />
+                <span>{safeVoteCount} votes</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <span>Popularity: {safePopularity}</span>
+              </div>
             </div>
           </div>
         </div>
