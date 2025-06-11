@@ -189,7 +189,7 @@ function Home() {
     }
 
     return (
-      <div className="flex justify-center items-center gap-2 mt-8">
+      <div className="flex justify-center items-center gap-2 mt-6">
         <button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1 || filterLoading}
@@ -228,6 +228,17 @@ function Home() {
     );
   };
 
+  function formatReleaseDate(dateString?: string): string {
+    if (!dateString) return "Unknown";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Unknown";
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+
   return (
     <div className="min-h-screen p-6">
       <h2 className="text-3xl font-bold text-center mb-6">
@@ -236,7 +247,7 @@ function Home() {
 
       {/* Filter Bar Component (No Search Input) */}
       <FilterBar
-        onFilterChange={(filters) => handleFilterChange(filters, 1)} // Always start from page 1 for new filters
+        onFilterChange={(filters) => handleFilterChange(filters, 1)}
         loading={filterLoading}
         genres={genres}
         initialFilters={currentFilters}
@@ -244,25 +255,26 @@ function Home() {
 
       {error && <div className="text-red-500 text-center mb-4">{error}</div>}
 
-      {/* Movie Grid */}
+      {/* Results or Loading State */}
       {loading || filterLoading ? (
         <div className="text-center text-gray-400">
           <div className="inline-block w-8 h-8 border-4 border-gray-400 border-t-transparent rounded-full animate-spin mb-2"></div>
           <p>Loading...</p>
         </div>
       ) : movies.length === 0 ? (
-        <div className="text-center text-gray-400 mt-8">
+        <div className="text-center text-gray-400 mt-6">
           No movies found with current filters.
         </div>
       ) : (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Movie Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 2xl:grid-cols-3 gap-4">
             {movies.map((movie) => (
               <MovieCard
                 key={movie.id}
                 id={movie.id}
                 title={movie.title || "Unknown Title"}
-                releaseDate={movie.release_date?.split("-")[0] || "Unknown"}
+                releaseDate={formatReleaseDate(movie.release_date) || "Unknown"}
                 posterPath={movie.poster_path || ""}
                 voteAverage={movie.vote_average || 0}
                 overview={movie.overview || "No overview available"}

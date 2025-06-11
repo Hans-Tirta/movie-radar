@@ -83,15 +83,49 @@ function MovieCard({
   };
 
   const truncatedOverview =
-    overview && overview.length > 150
-      ? overview.substring(0, 150) + "..."
+    overview && overview.length > 500
+      ? overview.substring(0, 500) + "..."
       : overview;
 
   return (
     <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
-      <div className="flex h-72 sm:h-64">
+      {/* Top Section - Title, Adult Badge, and Favorite Button */}
+      <div className="p-4 pb-2">
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="text-lg font-bold text-white leading-tight line-clamp-1 flex-1">
+            {title}
+            {adult && (
+              <span className="ml-2 px-1.5 py-0.5 bg-red-600 text-white text-xs rounded">
+                18+
+              </span>
+            )}
+          </h3>
+          <button
+            onClick={onFavoriteClick}
+            disabled={loading}
+            className={`flex-shrink-0 p-1.5 rounded-full transition-all duration-200 ${
+              loading
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-gray-700 hover:scale-110 active:scale-95"
+            }`}
+            title={favorite ? "Remove from favorites" : "Add to favorites"}
+          >
+            <Heart
+              size={18}
+              className={`transition-all duration-200 ${
+                favorite
+                  ? "fill-red-500 text-red-500 drop-shadow-sm"
+                  : "text-gray-400 hover:text-red-400"
+              }`}
+            />
+          </button>
+        </div>
+      </div>
+
+      {/* Bottom Section - Poster and Details */}
+      <div className="flex gap-4 p-4 pt-0">
         {/* Left Side - Movie Poster */}
-        <div className="w-48 sm:w-40 flex-shrink-0 bg-gray-700 flex items-center justify-center">
+        <div className="w-40 sm:w-36 flex-shrink-0 bg-gray-700 rounded-lg overflow-hidden aspect-[2/3]">
           {posterPath ? (
             <img
               src={`https://image.tmdb.org/t/p/w300${posterPath}`}
@@ -100,48 +134,18 @@ function MovieCard({
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-500">
-              <span className="text-sm text-center px-2">
+              <span className="text-xs text-center px-2">
                 No Image Available
               </span>
             </div>
           )}
         </div>
-        {/* Right Side - Movie Information */}
-        <div className="flex-1 p-4 flex flex-col">
-          {/* Header - Title and Favorite Button */}
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <h3 className="text-lg font-bold text-white leading-tight line-clamp-2 flex-1">
-              {title}
-              {adult && (
-                <span className="ml-2 px-1.5 py-0.5 bg-red-600 text-white text-xs rounded">
-                  18+
-                </span>
-              )}
-            </h3>
-            <button
-              onClick={onFavoriteClick}
-              disabled={loading}
-              className={`flex-shrink-0 p-1.5 rounded-full transition-all duration-200 ${
-                loading
-                  ? "opacity-50 cursor-not-allowed"
-                  : "hover:bg-gray-700 hover:scale-110 active:scale-95"
-              }`}
-              title={favorite ? "Remove from favorites" : "Add to favorites"}
-            >
-              <Heart
-                size={18}
-                className={`transition-all duration-200 ${
-                  favorite
-                    ? "fill-red-500 text-red-500 drop-shadow-sm"
-                    : "text-gray-400 hover:text-red-400"
-                }`}
-              />
-            </button>
-          </div>
 
+        {/* Right Side - Movie Information */}
+        <div className="flex-1 flex flex-col min-h-60 sm:min-h-52">
           {/* Genres */}
           {genres.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-3">
+            <div className="flex flex-wrap gap-1 mb-4">
               {genres.slice(0, 3).map((genre, index) => (
                 <span
                   key={index}
@@ -160,14 +164,14 @@ function MovieCard({
 
           {/* Overview */}
           {overview && (
-            <div className="mb-3 flex-1">
-              <div className="flex items-center gap-1 mb-1">
+            <div className="mb-4 flex-1">
+              <div className="flex items-center gap-1 mb-2">
                 <Info size={12} className="text-gray-400" />
                 <span className="text-gray-400 text-xs font-medium">
                   Overview
                 </span>
               </div>
-              <p className="text-gray-300 text-sm leading-relaxed line-clamp-3">
+              <p className="text-gray-300 text-sm leading-relaxed line-clamp-4">
                 {truncatedOverview}
               </p>
             </div>

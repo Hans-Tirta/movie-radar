@@ -91,7 +91,7 @@ function FilterBar({
   return (
     <div className="flex flex-col items-center mb-6 w-full">
       {/* Filter Toggle Button */}
-      <div className="flex justify-center mb-4 w-full">
+      <div className="flex justify-center w-full">
         <button
           type="button"
           onClick={() => setShowFilters(!showFilters)}
@@ -111,7 +111,7 @@ function FilterBar({
 
       {/* Filters Panel */}
       {showFilters && (
-        <div className="bg-gray-800 rounded-lg p-6 w-full">
+        <div className="bg-gray-800 rounded-lg p-6 mt-6 w-full">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Sort Options */}
             <div>
