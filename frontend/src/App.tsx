@@ -1,4 +1,5 @@
 import NavBar from "./components/NavBar";
+import Footer from "./components/Footer";
 import Favorites from "./pages/Favorites";
 import Home from "./pages/Home";
 import Search from "./pages/Search";
@@ -37,6 +38,7 @@ function App() {
             <Route path="*" element={<Navigate to="/login" replace />} />
           </Routes>
         </main>
+        {!shouldHideNav && <Footer />}
       </MovieProvider>
     </>
   );

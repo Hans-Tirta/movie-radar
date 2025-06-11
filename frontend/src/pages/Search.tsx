@@ -138,7 +138,7 @@ function Search() {
     }
 
     return (
-      <div className="flex justify-center items-center gap-2 mt-8">
+      <div className="flex justify-center items-center gap-2 my-8">
         <button
           onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1 || loading}
@@ -210,11 +210,8 @@ function Search() {
           <p className="text-sm">Enter a movie title to get started</p>
         </div>
       ) : movies.length === 0 ? (
-        <div className="text-center text-gray-400 mt-12">
-          <p className="text-xl mb-4">No movies found for "{query}"</p>
-          <p className="text-sm">
-            Try searching with different keywords or check spelling
-          </p>
+        <div className="text-center text-gray-400 mt-8">
+          No movies found with current filters.
         </div>
       ) : (
         <>
