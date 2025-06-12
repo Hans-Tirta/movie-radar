@@ -97,4 +97,23 @@ router.delete("/:id", verifyToken, async (req: Request, res: Response) => {
   }
 });
 
+// Delete all favorites for a specific user (called by auth service)
+router.delete("/user/:userId", async (req: Request, res: Response) => {
+  const userId = req.params.userId;
+
+  try {
+    const deletedCount = await prisma.favorite.deleteMany({
+      where: { userId },
+    });
+
+    res.status(200).json({
+      message: "User favorites deleted successfully",
+      deletedCount: deletedCount.count,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
 export default router;
