@@ -3,6 +3,7 @@ import Footer from "./components/Footer";
 import Favorites from "./pages/Favorites";
 import Home from "./pages/Home";
 import Search from "./pages/Search";
+import Profile from "./pages/Profile";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Logout from "./pages/Logout";
@@ -30,6 +31,7 @@ function App() {
             <Route element={<ProtectedRoute />}>
               <Route path="/" element={<Home />} />
               <Route path="/search" element={<Search />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="/favorites" element={<Favorites />} />
               <Route path="/logout" element={<Logout />} />
             </Route>

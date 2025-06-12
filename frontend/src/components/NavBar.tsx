@@ -179,12 +179,12 @@ function NavBar(): JSX.Element {
             {isUserMenuOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-gray-700 rounded-lg shadow-xl border border-gray-600 py-2 z-50">
                 <Link
-                  to="/"
+                  to="/profile"
                   className="flex items-center space-x-3 px-4 py-2 text-sm hover:bg-gray-600 transition-colors"
                   onClick={() => setIsUserMenuOpen(false)}
                 >
                   <User size={16} />
-                  <span>Profile (Unfinished)</span>
+                  <span>Profile</span>
                 </Link>
                 <Link
                   to="/"
