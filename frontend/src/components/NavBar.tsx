@@ -10,6 +10,7 @@ import {
   ChevronDown,
   Search,
 } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
 function NavBar(): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,6 +19,7 @@ function NavBar(): JSX.Element {
   const location = useLocation();
   const navigate = useNavigate();
   const userMenuRef = useRef<HTMLDivElement>(null);
+  const { user, isAuthenticated } = useAuth();
 
   // Close user menu when clicking outside
   useEffect(() => {
@@ -60,29 +62,6 @@ function NavBar(): JSX.Element {
     }
   };
 
-  // Function to get user name from JWT token
-  const getUserName = (): string => {
-    try {
-      const token = localStorage.getItem("token");
-      if (!token) return "User";
-
-      const base64Url = token.split(".")[1];
-      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
-      const jsonPayload = decodeURIComponent(
-        atob(base64)
-          .split("")
-          .map((c) => "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2))
-          .join("")
-      );
-
-      const decoded = JSON.parse(jsonPayload);
-      return decoded.username || "User";
-    } catch (error) {
-      console.error("Error parsing token:", error);
-      return "User";
-    }
-  };
-
   // Get user initials for avatar
   const getUserInitials = (name: string): string => {
     return name
@@ -92,7 +71,7 @@ function NavBar(): JSX.Element {
       .toUpperCase();
   };
 
-  const userName = getUserName();
+  const userName = user?.username || "User";
   const userInitials = getUserInitials(userName);
 
   return (
@@ -159,53 +138,55 @@ function NavBar(): JSX.Element {
           </form>
 
           {/* User Profile Dropdown */}
-          <div className="relative" ref={userMenuRef}>
-            <button
-              onClick={toggleUserMenu}
-              className="flex items-center space-x-3 hover:bg-gray-700 px-3 py-2 rounded-lg transition-colors"
-            >
-              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-md font-semibold">
-                {userInitials}
-              </div>
-              <span className="text-md font-medium">{userName}</span>
-              <ChevronDown
-                size={16}
-                className={`transition-transform ${
-                  isUserMenuOpen ? "rotate-180" : ""
-                }`}
-              />
-            </button>
+          {isAuthenticated && (
+            <div className="relative" ref={userMenuRef}>
+              <button
+                onClick={toggleUserMenu}
+                className="flex items-center space-x-3 hover:bg-gray-700 px-3 py-2 rounded-lg transition-colors"
+              >
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center text-md font-semibold">
+                  {userInitials}
+                </div>
+                <span className="text-md font-medium">{userName}</span>
+                <ChevronDown
+                  size={16}
+                  className={`transition-transform ${
+                    isUserMenuOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
 
-            {isUserMenuOpen && (
-              <div className="absolute right-0 mt-2 w-48 bg-gray-700 rounded-lg shadow-xl border border-gray-600 py-2 z-50">
-                <Link
-                  to="/profile"
-                  className="flex items-center space-x-3 px-4 py-2 text-sm hover:bg-gray-600 transition-colors"
-                  onClick={() => setIsUserMenuOpen(false)}
-                >
-                  <User size={16} />
-                  <span>Profile</span>
-                </Link>
-                <Link
-                  to="/"
-                  className="flex items-center space-x-3 px-4 py-2 text-sm hover:bg-gray-600 transition-colors"
-                  onClick={() => setIsUserMenuOpen(false)}
-                >
-                  <Settings size={16} />
-                  <span>Settings (Unfinished)</span>
-                </Link>
-                <div className="border-t border-gray-600 my-2"></div>
-                <Link
-                  to="/logout"
-                  className="flex items-center space-x-3 px-4 py-2 text-sm hover:bg-gray-600 text-red-400 hover:text-red-300 transition-colors"
-                  onClick={() => setIsUserMenuOpen(false)}
-                >
-                  <LogOut size={16} />
-                  <span>Logout</span>
-                </Link>
-              </div>
-            )}
-          </div>
+              {isUserMenuOpen && (
+                <div className="absolute right-0 mt-2 w-48 bg-gray-700 rounded-lg shadow-xl border border-gray-600 py-2 z-50">
+                  <Link
+                    to="/profile"
+                    className="flex items-center space-x-3 px-4 py-2 text-sm hover:bg-gray-600 transition-colors"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  >
+                    <User size={16} />
+                    <span>Profile</span>
+                  </Link>
+                  <Link
+                    to="/"
+                    className="flex items-center space-x-3 px-4 py-2 text-sm hover:bg-gray-600 transition-colors"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  >
+                    <Settings size={16} />
+                    <span>Settings (Unfinished)</span>
+                  </Link>
+                  <div className="border-t border-gray-600 my-2"></div>
+                  <Link
+                    to="/logout"
+                    className="flex items-center space-x-3 px-4 py-2 text-sm hover:bg-gray-600 text-red-400 hover:text-red-300 transition-colors"
+                    onClick={() => setIsUserMenuOpen(false)}
+                  >
+                    <LogOut size={16} />
+                    <span>Logout</span>
+                  </Link>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Hamburger Button */}
@@ -269,41 +250,43 @@ function NavBar(): JSX.Element {
             </Link>
 
             {/* Mobile User Section */}
-            <div className="border-t border-gray-600 pt-4 mt-4">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-sm font-semibold">
-                  {userInitials}
+            {isAuthenticated && (
+              <div className="border-t border-gray-600 pt-4 mt-4">
+                <div className="flex items-center space-x-3 mb-4">
+                  <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-sm font-semibold">
+                    {userInitials}
+                  </div>
+                  <span className="text-lg font-medium">{userName}</span>
                 </div>
-                <span className="text-lg font-medium">{userName}</span>
+
+                <Link
+                  to="/"
+                  className="flex items-center space-x-3 text-lg hover:text-blue-400 font-medium transition-colors mb-3"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <User size={20} />
+                  <span>Profile</span>
+                </Link>
+
+                <Link
+                  to="/"
+                  className="flex items-center space-x-3 text-lg hover:text-blue-400 font-medium transition-colors mb-3"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <Settings size={20} />
+                  <span>Settings</span>
+                </Link>
+
+                <Link
+                  to="/logout"
+                  className="flex items-center space-x-3 text-lg hover:text-red-400 font-medium transition-colors text-red-400"
+                  onClick={() => setIsOpen(false)}
+                >
+                  <LogOut size={20} />
+                  <span>Logout</span>
+                </Link>
               </div>
-
-              <Link
-                to="/"
-                className="flex items-center space-x-3 text-lg hover:text-blue-400 font-medium transition-colors mb-3"
-                onClick={() => setIsOpen(false)}
-              >
-                <User size={20} />
-                <span>Profile</span>
-              </Link>
-
-              <Link
-                to="/"
-                className="flex items-center space-x-3 text-lg hover:text-blue-400 font-medium transition-colors mb-3"
-                onClick={() => setIsOpen(false)}
-              >
-                <Settings size={20} />
-                <span>Settings</span>
-              </Link>
-
-              <Link
-                to="/logout"
-                className="flex items-center space-x-3 text-lg hover:text-red-400 font-medium transition-colors text-red-400"
-                onClick={() => setIsOpen(false)}
-              >
-                <LogOut size={20} />
-                <span>Logout</span>
-              </Link>
-            </div>
+            )}
           </div>
         </div>
       )}

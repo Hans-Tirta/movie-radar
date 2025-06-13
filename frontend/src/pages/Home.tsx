@@ -3,6 +3,7 @@ import { getPopularMovies, getGenres, discoverMovies } from "../services/api";
 import MovieCard from "../components/MovieCard";
 import FilterBar from "../components/FilterBar";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 interface Movie {
   id: number;
@@ -49,6 +50,7 @@ function Home() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [filterLoading, setFilterLoading] = useState(false);
+  const { isAuthenticated, loading: authLoading } = useAuth();
 
   // Pagination states
   const [pagination, setPagination] = useState<PaginationInfo>({
@@ -64,9 +66,11 @@ function Home() {
   });
 
   useEffect(() => {
-    // Check if token exists in localStorage, if not, redirect to login
-    const token = localStorage.getItem("token");
-    if (!token) {
+    // Wait for auth loading to complete
+    if (authLoading) return;
+
+    // Check authentication status from context
+    if (!isAuthenticated) {
       navigate("/login");
       return;
     }
@@ -256,7 +260,7 @@ function Home() {
       {error && <div className="text-red-500 text-center mb-4">{error}</div>}
 
       {/* Results or Loading State */}
-      {loading || filterLoading ? (
+      {loading || filterLoading || authLoading ? (
         <div className="text-center text-gray-400">
           <div className="inline-block w-8 h-8 border-4 border-gray-400 border-t-transparent rounded-full animate-spin mb-2"></div>
           <p>Loading...</p>

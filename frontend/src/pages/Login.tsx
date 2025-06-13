@@ -1,40 +1,32 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom"; // React Router hook for redirection
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 import { useMovieContext } from "../contexts/MovieContext";
 
 const LoginPage = () => {
-  const { fetchFavorites } = useMovieContext(); // Fetch favorites from the API
+  const { login } = useAuth();
+  const { fetchFavorites } = useMovieContext();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
-  const navigate = useNavigate(); // Hook to navigate to other pages
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setLoading(true);
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_AUTH_URL}/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (data.token) {
-        // Store JWT token in localStorage
-        localStorage.setItem("token", data.token);
-        // Redirect to home page after successful login
-        navigate("/");
-        // Fetch favorites after successful login
-        fetchFavorites();
-      } else {
-        setError("Invalid credentials");
-      }
-    } catch (error) {
-      setError("Something went wrong. Please try again.");
+      await login(email, password);
+      // Fetch favorites after successful login
+      await fetchFavorites();
+      // Redirect to home page
+      navigate("/");
+    } catch (error: any) {
+      setError(error.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -57,6 +49,7 @@ const LoginPage = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
+              disabled={loading}
             />
           </div>
 
@@ -71,24 +64,26 @@ const LoginPage = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
+              disabled={loading}
             />
           </div>
 
           <button
             type="submit"
-            className="w-full p-3 mt-6 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
+            disabled={loading}
+            className="w-full p-3 mt-6 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
-        {/* Redirect to Register Page */}
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-400">
             Don't have an account?{" "}
             <button
               className="text-blue-500 hover:underline"
               onClick={() => navigate("/register")}
+              disabled={loading}
             >
               Register here
             </button>

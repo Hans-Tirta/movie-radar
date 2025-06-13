@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { searchMovies } from "../services/api";
 import MovieCard from "../components/MovieCard";
+import { useAuth } from "../contexts/AuthContext";
 
 interface Movie {
   id: number;
@@ -32,6 +33,7 @@ function Search() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  const { isAuthenticated, loading: authLoading } = useAuth();
 
   // Pagination states
   const [pagination, setPagination] = useState<PaginationInfo>({
@@ -41,9 +43,11 @@ function Search() {
   });
 
   useEffect(() => {
-    // Check if token exists in localStorage, if not, redirect to login
-    const token = localStorage.getItem("token");
-    if (!token) {
+    // Wait for auth loading to complete
+    if (authLoading) return;
+
+    // Check authentication status from context
+    if (!isAuthenticated) {
       navigate("/login");
       return;
     }
@@ -61,7 +65,7 @@ function Search() {
         totalResults: 0,
       });
     }
-  }, [query, navigate]);
+  }, [query, navigate, isAuthenticated, authLoading]);
 
   const handleSearch = async (searchQuery: string, page: number = 1) => {
     if (!searchQuery.trim()) return;
@@ -208,10 +212,10 @@ function Search() {
       )}
 
       {/* Results or Loading State */}
-      {loading ? (
+      {loading || authLoading ? (
         <div className="text-center text-gray-400">
           <div className="inline-block w-8 h-8 border-4 border-gray-400 border-t-transparent rounded-full animate-spin mb-2"></div>
-          <p>Searching for "{query}"...</p>
+          <p>{authLoading ? "Loading..." : `Searching for "${query}"...`}</p>
         </div>
       ) : movies.length === 0 ? (
         <div className="text-center text-gray-400 mt-6">

@@ -7,6 +7,7 @@ import {
   deleteProfile,
 } from "../services/profileApi";
 import { User, Lock, Trash2, Edit, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "../contexts/AuthContext";
 
 interface UserProfile {
   id: string;
@@ -39,16 +40,26 @@ function Profile() {
   const [passwordLoading, setPasswordLoading] = useState(false);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
+  const {
+    isAuthenticated,
+    loading: authLoading,
+    logout,
+    updateUser,
+    user,
+  } = useAuth();
+
   useEffect(() => {
-    // Check if token exists, if not redirect to login
-    const token = localStorage.getItem("token");
-    if (!token) {
+    // Wait for auth loading to complete
+    if (authLoading) return;
+
+    // Check authentication status from context
+    if (!isAuthenticated) {
       navigate("/login");
       return;
     }
 
     fetchProfile();
-  }, [navigate]);
+  }, [navigate, isAuthenticated, authLoading]);
 
   const fetchProfile = async () => {
     setLoading(true);
@@ -64,7 +75,7 @@ function Profile() {
 
       // If unauthorized, redirect to login
       if (err instanceof Error && err.message.includes("401")) {
-        localStorage.removeItem("token");
+        logout();
         navigate("/login");
       }
     } finally {
@@ -86,6 +97,13 @@ function Profile() {
       const response = await updateUsername(newUsername.trim());
       setProfile(response.user);
       setIsEditingUsername(false);
+
+      if (user) {
+        updateUser({
+          ...user,
+          username: response.user.username,
+        });
+      }
     } catch (err) {
       console.error("Error updating username:", err);
       setError(
@@ -141,7 +159,7 @@ function Profile() {
 
     try {
       await deleteProfile();
-      localStorage.removeItem("token");
+      logout();
       navigate("/login");
     } catch (err) {
       console.error("Error deleting profile:", err);
@@ -169,7 +187,7 @@ function Profile() {
     setError("");
   };
 
-  if (loading) {
+  if (loading || authLoading) {
     return (
       <div className="min-h-screen p-6 flex items-center justify-center">
         <div className="text-center text-gray-400">

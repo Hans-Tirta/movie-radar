@@ -5,7 +5,7 @@ import {
   useEffect,
   ReactNode,
 } from "react";
-import axios from "axios";
+import { AuthAPI, useAuth } from "../contexts/AuthContext";
 
 // Define the Movie type
 interface Movie {
@@ -51,22 +51,25 @@ export const useMovieContext = (): MovieContextType => {
 
 export const MovieProvider = ({ children }: MovieProviderProps) => {
   const [favorites, setFavorites] = useState<Movie[]>([]);
-  const [token, setToken] = useState<string | null>(
-    localStorage.getItem("token")
-  );
+  const { isAuthenticated } = useAuth();
 
   // Fetch favorites from the backend
   const fetchFavorites = async () => {
     try {
-      const storedToken = localStorage.getItem("token");
-      if (!storedToken) return;
+      if (!isAuthenticated) return;
 
-      const response = await axios.get(`${FAVORITE_URL}`, {
-        headers: { Authorization: `Bearer ${storedToken}` },
-      });
+      const response = await AuthAPI.makeAuthenticatedRequest(
+        `${FAVORITE_URL}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch favorites");
+      }
+
+      const data = await response.json();
 
       // Normalize `movieId` to `id`
-      const normalizedFavorites = response.data.map((movie: any) => ({
+      const normalizedFavorites = data.map((movie: any) => ({
         id: movie.movieId, // Ensure `id` matches what MovieCard expects
         title: movie.title,
         releaseDate: movie.releaseDate,
@@ -90,36 +93,28 @@ export const MovieProvider = ({ children }: MovieProviderProps) => {
   };
 
   useEffect(() => {
-    if (token) {
-      fetchFavorites(); // Fetch favorites when the token updates (user logs in)
+    if (isAuthenticated) {
+      fetchFavorites();
+    } else {
+      setFavorites([]); // Clear favorites when not authenticated
     }
-  }, [setToken]);
-
-  useEffect(() => {
-    // Listen for token changes in localStorage
-    const handleTokenChange = () => {
-      const newToken = localStorage.getItem("token");
-      if (newToken !== token) {
-        setToken(newToken);
-        fetchFavorites(); // Refetch favorites when token changes
-      }
-    };
-
-    window.addEventListener("storage", handleTokenChange);
-    return () => window.removeEventListener("storage", handleTokenChange);
-  }, [token]);
+  }, [isAuthenticated]);
 
   // Add movie to favorites in backend
   const addToFavorites = async (movie: Movie) => {
     try {
-      const storedToken = localStorage.getItem("token");
-      if (!storedToken) return;
+      if (!isAuthenticated) return;
 
-      const response = await axios.post(`${FAVORITE_URL}`, movie, {
-        headers: { Authorization: `Bearer ${storedToken}` },
-      });
+      const response = await AuthAPI.makeAuthenticatedRequest(
+        `${FAVORITE_URL}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(movie),
+        }
+      );
 
-      if (response.status === 201) {
+      if (response.ok) {
         setFavorites((prev) => [...prev, movie]);
       }
     } catch (error) {
@@ -135,11 +130,10 @@ export const MovieProvider = ({ children }: MovieProviderProps) => {
       return;
     }
     try {
-      const storedToken = localStorage.getItem("token");
-      if (!storedToken) return;
+      if (!isAuthenticated) return;
 
-      await axios.delete(`${FAVORITE_URL}/${movieId}`, {
-        headers: { Authorization: `Bearer ${storedToken}` },
+      await AuthAPI.makeAuthenticatedRequest(`${FAVORITE_URL}/${movieId}`, {
+        method: "DELETE",
       });
 
       setFavorites((prev) => prev.filter((movie) => movie.id !== movieId));

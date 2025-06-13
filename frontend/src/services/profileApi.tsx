@@ -1,4 +1,6 @@
-const AUTH_BASE_URL = "http://localhost:5001/api"; // Your auth service URL
+import { AuthAPI } from "../contexts/AuthContext";
+
+const AUTH_BASE_URL = "http://localhost:5001/api";
 
 interface ProfileResponse {
   message: string;
@@ -24,26 +26,12 @@ interface MessageResponse {
   message: string;
 }
 
-// Helper function to get auth headers
-const getAuthHeaders = () => {
-  const token = localStorage.getItem("token");
-  if (!token) {
-    throw new Error("No authentication token found");
-  }
-
-  return {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${token}`,
-  };
-};
-
 // Get user profile
 export const getProfile = async (): Promise<ProfileResponse> => {
   try {
-    const response = await fetch(`${AUTH_BASE_URL}/profile`, {
-      method: "GET",
-      headers: getAuthHeaders(),
-    });
+    const response = await AuthAPI.makeAuthenticatedRequest(
+      `${AUTH_BASE_URL}/profile`
+    );
 
     if (!response.ok) {
       if (response.status === 401) {
@@ -64,11 +52,16 @@ export const updateUsername = async (
   username: string
 ): Promise<UpdateResponse> => {
   try {
-    const response = await fetch(`${AUTH_BASE_URL}/profile/username`, {
-      method: "PUT",
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ username }),
-    });
+    const response = await AuthAPI.makeAuthenticatedRequest(
+      `${AUTH_BASE_URL}/profile/username`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ username }),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -88,11 +81,16 @@ export const updatePassword = async (
   newPassword: string
 ): Promise<MessageResponse> => {
   try {
-    const response = await fetch(`${AUTH_BASE_URL}/profile/password`, {
-      method: "PUT",
-      headers: getAuthHeaders(),
-      body: JSON.stringify({ currentPassword, newPassword }),
-    });
+    const response = await AuthAPI.makeAuthenticatedRequest(
+      `${AUTH_BASE_URL}/profile/password`,
+      {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();
@@ -109,10 +107,12 @@ export const updatePassword = async (
 // Delete profile
 export const deleteProfile = async (): Promise<MessageResponse> => {
   try {
-    const response = await fetch(`${AUTH_BASE_URL}/profile`, {
-      method: "DELETE",
-      headers: getAuthHeaders(),
-    });
+    const response = await AuthAPI.makeAuthenticatedRequest(
+      `${AUTH_BASE_URL}/profile`,
+      {
+        method: "DELETE",
+      }
+    );
 
     if (!response.ok) {
       const errorData = await response.json();

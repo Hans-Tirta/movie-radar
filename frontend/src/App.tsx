@@ -10,6 +10,7 @@ import Logout from "./pages/Logout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { MovieProvider } from "./contexts/MovieContext";
+import { AuthProvider } from "./contexts/AuthContext";
 
 function App() {
   const location = useLocation();
@@ -18,7 +19,7 @@ function App() {
   const shouldHideNav = hideNavPaths.includes(location.pathname);
 
   return (
-    <>
+    <AuthProvider>
       <MovieProvider>
         {!shouldHideNav && <NavBar />}
         <main className="main-content">
@@ -42,7 +43,7 @@ function App() {
         </main>
         {!shouldHideNav && <Footer />}
       </MovieProvider>
-    </>
+    </AuthProvider>
   );
 }
 
