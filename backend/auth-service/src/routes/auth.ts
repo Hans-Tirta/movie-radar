@@ -4,6 +4,7 @@ import prisma from "../db";
 import { z } from "zod";
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
+import { validateTokenEndpoint } from "../middleware/authMiddleware";
 
 const router = express.Router();
 
@@ -232,5 +233,7 @@ router.post("/logout-all", async (req: Request, res: Response) => {
     res.status(400).json({ message: error.message });
   }
 });
+
+router.post('/validate-token', validateTokenEndpoint);
 
 export default router;
