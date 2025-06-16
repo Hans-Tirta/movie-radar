@@ -89,7 +89,7 @@ function NavBar(): JSX.Element {
           </Link>
 
           {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden lg:flex items-center space-x-4">
             <Link
               to="/"
               className={`hover:text-blue-400 font-medium transition-colors relative ${
@@ -114,7 +114,7 @@ function NavBar(): JSX.Element {
         </div>
 
         {/* Right Side: Search + User */}
-        <div className="hidden md:flex items-center space-x-4">
+        <div className="hidden lg:flex items-center space-x-4">
           {/* Search Bar */}
           <form onSubmit={handleSearchSubmit} className="relative">
             <div className="flex items-center">
@@ -123,7 +123,7 @@ function NavBar(): JSX.Element {
                 <input
                   type="text"
                   placeholder="Search movies..."
-                  className="w-48 lg:w-64 pl-10 pr-4 py-2 rounded-l-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none transition-all"
+                  className="w-64 pl-10 pr-4 py-2 rounded-l-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none transition-all"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -192,7 +192,7 @@ function NavBar(): JSX.Element {
         {/* Hamburger Button */}
         <button
           onClick={toggleMenu}
-          className="md:hidden p-2 rounded-md hover:bg-gray-700 transition-colors"
+          className="lg:hidden p-2 rounded-md hover:bg-gray-700 transition-colors"
           aria-label="Toggle menu"
         >
           {isOpen ? <X size={24} /> : <Menu size={24} />}
@@ -201,7 +201,7 @@ function NavBar(): JSX.Element {
 
       {/* Mobile Menu */}
       {isOpen && (
-        <div className="md:hidden mt-4 pb-4 border-t border-gray-700">
+        <div className="lg:hidden mt-4 pb-4 border-t border-gray-700">
           <div className="flex flex-col space-y-4 pt-4">
             {/* Mobile Search Bar */}
             <form onSubmit={handleSearchSubmit} className="w-full">
@@ -260,7 +260,7 @@ function NavBar(): JSX.Element {
                 </div>
 
                 <Link
-                  to="/"
+                  to="/profile"
                   className="flex items-center space-x-3 text-lg hover:text-blue-400 font-medium transition-colors mb-3"
                   onClick={() => setIsOpen(false)}
                 >
@@ -274,7 +274,7 @@ function NavBar(): JSX.Element {
                   onClick={() => setIsOpen(false)}
                 >
                   <Settings size={20} />
-                  <span>Settings</span>
+                  <span>Settings (Unfinished)</span>
                 </Link>
 
                 <Link

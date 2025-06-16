@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useMovieContext } from "../contexts/MovieContext";
 import { Heart, Star, Calendar, Users, Info } from "lucide-react";
 
@@ -28,9 +29,11 @@ function MovieCard({
   adult,
   genres = [],
 }: MovieCardProps) {
+  const navigate = useNavigate();
   const { isFavorite, addToFavorites, removeFromFavorites } = useMovieContext();
   const [loading, setLoading] = useState(false);
   const favorite = isFavorite(id);
+
   // Add these safe checks:
   const safeVoteAverage =
     typeof voteAverage === "number" && voteAverage > 0
@@ -47,6 +50,7 @@ function MovieCard({
 
   const onFavoriteClick = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
+    e.stopPropagation(); // Prevent card click when clicking favorite button
     setLoading(true);
 
     console.log(`Movie ID on click: ${id}`);
@@ -82,13 +86,20 @@ function MovieCard({
     }
   };
 
+  const onCardClick = () => {
+    navigate(`/movie/${id}`);
+  };
+
   const truncatedOverview =
     overview && overview.length > 500
       ? overview.substring(0, 500) + "..."
       : overview;
 
   return (
-    <div className="bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+    <div
+      className="bg-gray-800 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] cursor-pointer"
+      onClick={onCardClick}
+    >
       {/* Top Section - Title, Adult Badge, and Favorite Button */}
       <div className="p-4 pb-2">
         <div className="flex items-start justify-between gap-2">
@@ -103,7 +114,7 @@ function MovieCard({
           <button
             onClick={onFavoriteClick}
             disabled={loading}
-            className={`flex-shrink-0 p-1.5 rounded-full transition-all duration-200 ${
+            className={`flex-shrink-0 p-1.5 rounded-full transition-all duration-200 z-10 ${
               loading
                 ? "opacity-50 cursor-not-allowed"
                 : "hover:bg-gray-700 hover:scale-110 active:scale-95"

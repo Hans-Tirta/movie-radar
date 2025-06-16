@@ -27,6 +27,46 @@ interface APIResponse {
   total_results: number;
 }
 
+interface MovieDetails {
+  id: number;
+  title: string;
+  original_title: string;
+  overview: string;
+  release_date: string;
+  poster_path: string;
+  backdrop_path: string;
+  vote_average: number;
+  vote_count: number;
+  popularity: number;
+  adult: boolean;
+  genres: Array<{
+    id: number;
+    name: string;
+  }>;
+  runtime: number;
+  budget: number;
+  revenue: number;
+  homepage: string;
+  original_language: string;
+  production_companies: Array<{
+    id: number;
+    name: string;
+    logo_path: string | null;
+    origin_country: string;
+  }>;
+  production_countries: Array<{
+    iso_3166_1: string;
+    name: string;
+  }>;
+  spoken_languages: Array<{
+    english_name: string;
+    iso_639_1: string;
+    name: string;
+  }>;
+  status: string;
+  tagline: string | null;
+}
+
 // Define filters interface to match your Home component
 export interface DiscoverFilters {
   selectedGenres: number[];
@@ -224,5 +264,28 @@ export const searchMovies = async (
   } catch (error) {
     console.error("Error searching movies:", error);
     throw new Error("Failed to search movies");
+  }
+};
+
+// Get detailed movie information
+export const getMovieDetails = async (
+  movieId: number
+): Promise<MovieDetails> => {
+  try {
+    const response = await fetch(
+      `${BASE_URL}movie/${movieId}?api_key=${API_KEY}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Movie Details API Response:", data);
+
+    return data;
+  } catch (error) {
+    console.error("Error fetching movie details:", error);
+    throw new Error("Failed to fetch movie details");
   }
 };
