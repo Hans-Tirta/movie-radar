@@ -1,0 +1,15 @@
+{
+  "navbar": {
+    "brand": "MovieRadar",
+    "home": "首页",
+    "favorites": "收藏",
+    "search_placeholder": "搜索电影...",
+    "profile": "个人资料",
+    "logout": "退出"
+  },
+  "languages": {
+    "en": "English",
+    "id": "Bahasa Indonesia",
+    "cn": "简体中文"
+  }
+}

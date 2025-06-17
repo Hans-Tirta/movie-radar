@@ -1,3 +1,5 @@
+import i18n from "../i18n";
+
 const API_KEY = import.meta.env.VITE_API_KEY;
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -81,17 +83,32 @@ export interface DiscoverFilters {
     | "title.desc";
 }
 
-// Cache genres to avoid repeated API calls
-let genreCache: Genre[] | null = null;
+// Helper function to get current language and map to TMDB format
+const getTMDBLanguage = (): string => {
+  const currentLang = i18n.language || "en";
+
+  const languageMap: { [key: string]: string } = {
+    en: "en-US",
+    id: "id-ID",
+    cn: "zh-CN",
+  };
+
+  return languageMap[currentLang] || "en-US";
+};
+
+// Cache genres per language to avoid repeated API calls
+const genreCache: { [language: string]: Genre[] } = {};
 
 export const getGenres = async (): Promise<Genre[]> => {
-  if (genreCache) {
-    return genreCache;
+  const language = getTMDBLanguage();
+
+  if (genreCache[language]) {
+    return genreCache[language];
   }
 
   try {
     const response = await fetch(
-      `${BASE_URL}genre/movie/list?api_key=${API_KEY}`
+      `${BASE_URL}genre/movie/list?api_key=${API_KEY}&language=${language}`
     );
 
     if (!response.ok) {
@@ -99,7 +116,7 @@ export const getGenres = async (): Promise<Genre[]> => {
     }
 
     const data = await response.json();
-    genreCache = data.genres;
+    genreCache[language] = data.genres;
     return data.genres;
   } catch (error) {
     console.error("Error fetching genres:", error);
@@ -140,12 +157,17 @@ const sanitizeMovie = (movie: any, genres: Genre[]): Movie => {
 };
 
 // Get popular movies (used for Home page default state)
+// Update getPopularMovies
 export const getPopularMovies = async (
   page: number = 1
 ): Promise<APIResponse> => {
   try {
+    const language = getTMDBLanguage();
+
     const [moviesResponse, genres] = await Promise.all([
-      fetch(`${BASE_URL}movie/popular?api_key=${API_KEY}&page=${page}`),
+      fetch(
+        `${BASE_URL}movie/popular?api_key=${API_KEY}&page=${page}&language=${language}`
+      ),
       getGenres(),
     ]);
 
@@ -153,10 +175,37 @@ export const getPopularMovies = async (
       throw new Error(`HTTP error! status: ${moviesResponse.status}`);
     }
 
-    const moviesData = await moviesResponse.json();
-    console.log("Popular Movies API Response:", moviesData);
+    let moviesData = await moviesResponse.json();
 
-    // Sanitize and map genre IDs to names for each movie
+    // Check for missing overviews and fetch English if needed
+    if (language !== "en-US") {
+      const moviesWithMissingOverview = moviesData.results?.filter(
+        (movie: any) => !movie.overview || movie.overview.trim() === ""
+      );
+
+      if (moviesWithMissingOverview && moviesWithMissingOverview.length > 0) {
+        const englishResponse = await fetch(
+          `${BASE_URL}movie/popular?api_key=${API_KEY}&page=${page}&language=en-US`
+        );
+
+        if (englishResponse.ok) {
+          const englishData = await englishResponse.json();
+
+          moviesData.results = moviesData.results.map((movie: any) => {
+            if (!movie.overview || movie.overview.trim() === "") {
+              const englishMovie = englishData.results?.find(
+                (em: any) => em.id === movie.id
+              );
+              if (englishMovie?.overview) {
+                movie.overview = englishMovie.overview;
+              }
+            }
+            return movie;
+          });
+        }
+      }
+    }
+
     const moviesWithGenres = (moviesData.results || []).map((movie: any) =>
       sanitizeMovie(movie, genres)
     );
@@ -164,7 +213,7 @@ export const getPopularMovies = async (
     return {
       page: moviesData.page || 1,
       results: moviesWithGenres,
-      total_pages: Math.min(moviesData.total_pages || 1, 500), // TMDB limits to 500 pages
+      total_pages: Math.min(moviesData.total_pages || 1, 500),
       total_results: moviesData.total_results || 0,
     };
   } catch (error) {
@@ -179,7 +228,8 @@ export const discoverMovies = async (
   page: number = 1
 ): Promise<APIResponse> => {
   try {
-    let discoverUrl = `${BASE_URL}discover/movie?api_key=${API_KEY}&page=${page}`;
+    const language = getTMDBLanguage();
+    let discoverUrl = `${BASE_URL}discover/movie?api_key=${API_KEY}&page=${page}&language=${language}`;
 
     // Add genre filters
     if (filters.selectedGenres && filters.selectedGenres.length > 0) {
@@ -204,6 +254,38 @@ export const discoverMovies = async (
 
     const data = await response.json();
     console.log("Discover Movies API Response:", data);
+
+    // Check for missing overviews and fetch English if needed
+    if (language !== "en-US") {
+      const moviesWithMissingOverview = data.results?.filter(
+        (movie: any) => !movie.overview || movie.overview.trim() === ""
+      );
+
+      if (moviesWithMissingOverview && moviesWithMissingOverview.length > 0) {
+        // Create English version of the same URL
+        const englishUrl = discoverUrl.replace(
+          `language=${language}`,
+          "language=en-US"
+        );
+        const englishResponse = await fetch(englishUrl);
+
+        if (englishResponse.ok) {
+          const englishData = await englishResponse.json();
+
+          data.results = data.results.map((movie: any) => {
+            if (!movie.overview || movie.overview.trim() === "") {
+              const englishMovie = englishData.results?.find(
+                (em: any) => em.id === movie.id
+              );
+              if (englishMovie?.overview) {
+                movie.overview = englishMovie.overview;
+              }
+            }
+            return movie;
+          });
+        }
+      }
+    }
 
     // Sanitize movies and map genre IDs to names
     const moviesWithGenres = (data.results || []).map((movie: any) =>
@@ -232,9 +314,10 @@ export const searchMovies = async (
       throw new Error("Search query cannot be empty");
     }
 
+    const language = getTMDBLanguage();
     const searchUrl = `${BASE_URL}search/movie?api_key=${API_KEY}&query=${encodeURIComponent(
       query.trim()
-    )}&page=${page}`;
+    )}&page=${page}&language=${language}`;
 
     console.log("Search URL:", searchUrl);
 
@@ -249,6 +332,38 @@ export const searchMovies = async (
 
     const data = await response.json();
     console.log("Search Movies API Response:", data);
+
+    // Check for missing overviews and fetch English if needed
+    if (language !== "en-US") {
+      const moviesWithMissingOverview = data.results?.filter(
+        (movie: any) => !movie.overview || movie.overview.trim() === ""
+      );
+
+      if (moviesWithMissingOverview && moviesWithMissingOverview.length > 0) {
+        // Create English version of the same search URL
+        const englishUrl = searchUrl.replace(
+          `language=${language}`,
+          "language=en-US"
+        );
+        const englishResponse = await fetch(englishUrl);
+
+        if (englishResponse.ok) {
+          const englishData = await englishResponse.json();
+
+          data.results = data.results.map((movie: any) => {
+            if (!movie.overview || movie.overview.trim() === "") {
+              const englishMovie = englishData.results?.find(
+                (em: any) => em.id === movie.id
+              );
+              if (englishMovie?.overview) {
+                movie.overview = englishMovie.overview;
+              }
+            }
+            return movie;
+          });
+        }
+      }
+    }
 
     // Sanitize movies and map genre IDs to names
     const moviesWithGenres = (data.results || []).map((movie: any) =>
@@ -272,8 +387,9 @@ export const getMovieDetails = async (
   movieId: number
 ): Promise<MovieDetails> => {
   try {
+    const language = getTMDBLanguage();
     const response = await fetch(
-      `${BASE_URL}movie/${movieId}?api_key=${API_KEY}`
+      `${BASE_URL}movie/${movieId}?api_key=${API_KEY}&language=${language}`
     );
 
     if (!response.ok) {

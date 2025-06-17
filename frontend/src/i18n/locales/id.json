@@ -1,0 +1,15 @@
+{
+  "navbar": {
+    "brand": "MovieRadar",
+    "home": "Beranda",
+    "favorites": "Favorit",
+    "search_placeholder": "Cari film...",
+    "profile": "Profil",
+    "logout": "Keluar"
+  },
+  "languages": {
+    "en": "English",
+    "id": "Bahasa Indonesia",
+    "cn": "简体中文"
+  }
+}

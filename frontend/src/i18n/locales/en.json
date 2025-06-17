@@ -1,0 +1,15 @@
+{
+  "navbar": {
+    "brand": "MovieRadar",
+    "home": "Home",
+    "favorites": "Favorites",
+    "search_placeholder": "Search movies...",
+    "profile": "Profile",
+    "logout": "Logout"
+  },
+  "languages": {
+    "en": "English",
+    "id": "Bahasa Indonesia",
+    "cn": "简体中文"
+  }
+}
