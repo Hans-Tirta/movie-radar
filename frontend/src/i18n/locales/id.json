@@ -11,5 +11,92 @@
     "en": "English",
     "id": "Bahasa Indonesia",
     "cn": "简体中文"
+  },
+  "filterbar": {
+    "title": "Filter",
+    "sort_by": "Urutkan berdasarkan",
+    "sort_options": {
+      "popularity_desc": "Popularitas (menurun)",
+      "popularity_asc": "Popularitas (menaik)",
+      "release_date_desc": "Tanggal Rilis (menurun)",
+      "release_date_asc": "Tanggal Rilis (menaik)",
+      "vote_average_desc": "Rata-rata Suara (menurun)",
+      "vote_average_asc": "Rata-rata Suara (menaik)",
+      "title_asc": "Judul (A-Z)",
+      "title_desc": "Judul (Z-A)"
+    },
+    "show_filters": "Tampilkan Filter",
+    "hide_filters": "Sembunyikan Filter",
+    "clear_all_filters": "Hapus Semua Filter",
+    "genres": "Genre"
+  },
+  "footer": {
+    "copyright": "© {{year}} MovieRadar.",
+    "uses_api": "Produk ini menggunakan",
+    "api_text": "API",
+    "not_endorsed": "tetapi tidak didukung atau disertifikasi oleh TMDB."
+  },
+  "movieCard": {
+    "add_to_favorites": "Tambah ke favorit",
+    "remove_from_favorites": "Hapus dari favorit",
+    "no_image": "Gambar Tidak Tersedia",
+    "overview": "Sinopsis",
+    "votes": "suara",
+    "popularity": "Popularitas"
+  },
+  "protectedRoutes": {
+    "loading": "Memuat..."
+  },
+  "home": {
+    "filtered_movies": "Film Terfilter ({{count, number}} ditemukan)",
+    "popular_movies": "Film Populer ({{count, number}} total)",
+    "failed_to_load": "Gagal memuat film",
+    "failed_to_filter": "Gagal memfilter film",
+    "loading": "Memuat...",
+    "no_movies_found": "Tidak ada film yang ditemukan dengan filter saat ini.",
+    "previous": "Sebelumnya",
+    "next": "Selanjutnya",
+    "unknown_title": "Judul Tidak Diketahui",
+    "unknown_date": "Tidak Diketahui",
+    "no_overview": "Sinopsis tidak tersedia"
+  },
+  "favorites": {
+    "title": "Film Favorit Anda",
+    "title_with_count": "Film Favorit Anda ({{count, number}} total)",
+    "loading": "Memuat...",
+    "empty_message": "Klik tombol \"Favorit\" pada film untuk menandainya sebagai favorit."
+  },
+  "search": {
+    "title": "Cari Film",
+    "searching": "Mencari...",
+    "error_title": "Error Pencarian",
+    "no_results": "Tidak ada hasil untuk \"{{query}}\"",
+    "results_found": "Hasil Pencarian untuk \"{{query}}\" ({{count, number}} ditemukan)",
+    "failed_to_search": "Gagal mencari film",
+    "try_different": "Coba cari dengan judul film yang berbeda",
+    "loading": "Memuat...",
+    "searching_for": "Mencari \"{{query}}\"...",
+    "no_movies_found": "Tidak ada film yang ditemukan dengan filter saat ini.",
+    "previous": "Sebelumnya",
+    "next": "Selanjutnya",
+    "unknown_title": "Judul Tidak Diketahui",
+    "unknown_date": "Tidak Diketahui",
+    "no_overview": "Sinopsis tidak tersedia"
+  },
+  "movieDetail": {
+    "loading": "Memuat detail...",
+    "notFound": "Film tidak ditemukan",
+    "back": "Kembali",
+    "goBack": "Kembali",
+    "addToFavorites": "Tambah ke favorit",
+    "removeFromFavorites": "Hapus dari favorit",
+    "overview": "Ringkasan",
+    "budget": "Anggaran",
+    "revenue": "Pendapatan",
+    "popularity": "Popularitas",
+    "language": "Bahasa",
+    "original": "Asli",
+    "votes": "suara",
+    "noImage": "Gambar Tidak Tersedia"
   }
 }

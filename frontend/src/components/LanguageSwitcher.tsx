@@ -42,6 +42,10 @@ function LanguageSwitcher() {
   const handleLanguageChange = (languageCode: string) => {
     i18n.changeLanguage(languageCode);
     setIsOpen(false);
+
+    setTimeout(() => {
+      window.location.reload();
+    }, 100);
   };
 
   return (

@@ -399,6 +399,24 @@ export const getMovieDetails = async (
     const data = await response.json();
     console.log("Movie Details API Response:", data);
 
+    // Check for missing overviews and fetch English if needed
+    if (language !== "en-US") {
+      if (!data.overview || data.overview.trim() === "") {
+        // Fetch English version of the same movie
+        const englishResponse = await fetch(
+          `${BASE_URL}movie/${movieId}?api_key=${API_KEY}&language=en-US`
+        );
+
+        if (englishResponse.ok) {
+          const englishData = await englishResponse.json();
+
+          if (englishData.overview) {
+            data.overview = englishData.overview;
+          }
+        }
+      }
+    }
+
     return data;
   } catch (error) {
     console.error("Error fetching movie details:", error);

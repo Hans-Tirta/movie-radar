@@ -11,6 +11,7 @@ import {
   Globe,
   DollarSign,
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface MovieDetailData {
   id: number;
@@ -33,6 +34,7 @@ interface MovieDetailData {
 }
 
 function MovieDetail() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { isFavorite, addToFavorites, removeFromFavorites } = useMovieContext();
@@ -137,7 +139,7 @@ function MovieDetail() {
       <div className="min-h-screen p-6 flex items-center justify-center">
         <div className="text-center text-gray-400">
           <div className="inline-block w-8 h-8 border-4 border-gray-400 border-t-transparent rounded-full animate-spin mb-2"></div>
-          <p>Loading detail...</p>
+          <p>{t("movieDetail.loading")}</p>
         </div>
       </div>
     );
@@ -148,13 +150,13 @@ function MovieDetail() {
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-400 text-xl mb-4">
-            {error || "Movie not found"}
+            {error || t("movieDetail.notFound")}
           </div>
           <button
             onClick={() => navigate(-1)}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            Go Back
+            {t("movieDetail.goBack")}
           </button>
         </div>
       </div>
@@ -192,7 +194,7 @@ function MovieDetail() {
             className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
           >
             <ArrowLeft size={20} />
-            <span>Back</span>
+            <span>{t("movieDetail.back")}</span>
           </button>
         </div>
 
@@ -210,7 +212,9 @@ function MovieDetail() {
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center text-gray-500">
-                    <span className="text-center">No Image Available</span>
+                    <span className="text-center">
+                      {t("movieDetail.noImage")}
+                    </span>
                   </div>
                 )}
               </div>
@@ -232,7 +236,7 @@ function MovieDetail() {
                   {movie.originalTitle &&
                     movie.originalTitle !== movie.title && (
                       <p className="text-gray-400 text-lg italic">
-                        Original: {movie.originalTitle}
+                        {t("movieDetail.original")}: {movie.originalTitle}
                       </p>
                     )}
                 </div>
@@ -245,7 +249,9 @@ function MovieDetail() {
                       : "hover:bg-gray-700 hover:scale-110 active:scale-95"
                   }`}
                   title={
-                    favorite ? "Remove from favorites" : "Add to favorites"
+                    favorite
+                      ? t("movieDetail.removeFromFavorites")
+                      : t("movieDetail.addToFavorites")
                   }
                 >
                   <Heart
@@ -281,7 +287,8 @@ function MovieDetail() {
                     {movie.voteAverage.toFixed(1)}
                   </span>
                   <span className="text-gray-400">
-                    ({movie.voteCount.toLocaleString()} votes)
+                    ({movie.voteCount.toLocaleString()} {t("movieDetail.votes")}
+                    )
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-gray-300">
@@ -298,7 +305,9 @@ function MovieDetail() {
 
               {/* Overview */}
               <div className="space-y-3">
-                <h2 className="text-2xl font-semibold text-white">Overview</h2>
+                <h2 className="text-2xl font-semibold text-white">
+                  {t("movieDetail.overview")}
+                </h2>
                 <p className="text-gray-300 text-lg leading-relaxed">
                   {movie.overview}
                 </p>
@@ -309,7 +318,9 @@ function MovieDetail() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-gray-400">
                     <DollarSign size={16} />
-                    <span className="font-medium">Budget</span>
+                    <span className="font-medium">
+                      {t("movieDetail.budget")}
+                    </span>
                   </div>
                   <p className="text-white text-xl font-semibold">
                     {formatCurrency(movie.budget || 0)}
@@ -319,7 +330,9 @@ function MovieDetail() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-gray-400">
                     <DollarSign size={16} />
-                    <span className="font-medium">Revenue</span>
+                    <span className="font-medium">
+                      {t("movieDetail.revenue")}
+                    </span>
                   </div>
                   <p className="text-white text-xl font-semibold">
                     {formatCurrency(movie.revenue || 0)}
@@ -329,7 +342,9 @@ function MovieDetail() {
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-gray-400">
                     <Users size={16} />
-                    <span className="font-medium">Popularity</span>
+                    <span className="font-medium">
+                      {t("movieDetail.popularity")}
+                    </span>
                   </div>
                   <p className="text-white text-xl font-semibold">
                     {movie.popularity.toFixed(1)}
@@ -340,7 +355,9 @@ function MovieDetail() {
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-gray-400">
                       <Globe size={16} />
-                      <span className="font-medium">Language</span>
+                      <span className="font-medium">
+                        {t("movieDetail.language")}
+                      </span>
                     </div>
                     <p className="text-white text-xl font-semibold uppercase">
                       {movie.originalLanguage}

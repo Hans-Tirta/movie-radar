@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useMovieContext } from "../contexts/MovieContext";
 import { Heart, Star, Calendar, Users, Info } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface MovieCardProps {
   id: number;
@@ -29,6 +30,7 @@ function MovieCard({
   adult,
   genres = [],
 }: MovieCardProps) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { isFavorite, addToFavorites, removeFromFavorites } = useMovieContext();
   const [loading, setLoading] = useState(false);
@@ -119,7 +121,11 @@ function MovieCard({
                 ? "opacity-50 cursor-not-allowed"
                 : "hover:bg-gray-700 hover:scale-110 active:scale-95"
             }`}
-            title={favorite ? "Remove from favorites" : "Add to favorites"}
+            title={
+              favorite
+                ? t("movieCard.remove_from_favorites")
+                : t("movieCard.add_to_favorites")
+            }
           >
             <Heart
               size={18}
@@ -146,7 +152,7 @@ function MovieCard({
           ) : (
             <div className="w-full h-full flex items-center justify-center text-gray-500">
               <span className="text-xs text-center px-2">
-                No Image Available
+                {t("movieCard.no_image")}
               </span>
             </div>
           )}
@@ -179,7 +185,7 @@ function MovieCard({
               <div className="flex items-center gap-1 mb-2">
                 <Info size={12} className="text-gray-400" />
                 <span className="text-gray-400 text-xs font-medium">
-                  Overview
+                  {t("movieCard.overview")}
                 </span>
               </div>
               <p className="text-gray-300 text-sm leading-relaxed line-clamp-4">
@@ -205,10 +211,14 @@ function MovieCard({
             <div className="flex items-center justify-between text-xs text-gray-400">
               <div className="flex items-center gap-1">
                 <Users size={12} />
-                <span>{safeVoteCount} votes</span>
+                <span>
+                  {safeVoteCount} {t("movieCard.votes")}
+                </span>
               </div>
               <div className="flex items-center gap-1">
-                <span>Popularity: {safePopularity}</span>
+                <span>
+                  {t("movieCard.popularity")}: {safePopularity}
+                </span>
               </div>
             </div>
           </div>

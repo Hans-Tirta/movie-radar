@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Filter, ChevronDown } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface Genre {
   id: number;
@@ -32,6 +33,7 @@ function FilterBar({
   genres,
   initialFilters,
 }: FilterBarProps) {
+  const { t } = useTranslation();
   const [selectedGenres, setSelectedGenres] = useState<number[]>(
     initialFilters?.selectedGenres || []
   );
@@ -41,14 +43,32 @@ function FilterBar({
   const [showFilters, setShowFilters] = useState(false);
 
   const sortOptions = [
-    { value: "popularity.desc", label: "Popularity (High to Low)" },
-    { value: "popularity.asc", label: "Popularity (Low to High)" },
-    { value: "release_date.desc", label: "Release Date (Newest First)" },
-    { value: "release_date.asc", label: "Release Date (Oldest First)" },
-    { value: "vote_average.desc", label: "Rating (High to Low)" },
-    { value: "vote_average.asc", label: "Rating (Low to High)" },
-    { value: "title.asc", label: "Title (A - Z)" },
-    { value: "title.desc", label: "Title (Z - A)" },
+    {
+      value: "popularity.desc",
+      label: t("filterbar.sort_options.popularity_desc"),
+    },
+    {
+      value: "popularity.asc",
+      label: t("filterbar.sort_options.popularity_asc"),
+    },
+    {
+      value: "release_date.desc",
+      label: t("filterbar.sort_options.release_date_desc"),
+    },
+    {
+      value: "release_date.asc",
+      label: t("filterbar.sort_options.release_date_asc"),
+    },
+    {
+      value: "vote_average.desc",
+      label: t("filterbar.sort_options.vote_average_desc"),
+    },
+    {
+      value: "vote_average.asc",
+      label: t("filterbar.sort_options.vote_average_asc"),
+    },
+    { value: "title.asc", label: t("filterbar.sort_options.title_asc") },
+    { value: "title.desc", label: t("filterbar.sort_options.title_desc") },
   ];
 
   // Update local state when initialFilters change
@@ -99,7 +119,9 @@ function FilterBar({
         >
           <Filter className="w-5 h-5" />
           <span className="font-medium">
-            {hasActiveFilters ? "Filters Active" : "Show Filters"}
+            {showFilters
+              ? t("filterbar.hide_filters")
+              : t("filterbar.show_filters")}
           </span>
           <ChevronDown
             className={`w-4 h-4 transform transition-transform ${
@@ -116,7 +138,7 @@ function FilterBar({
             {/* Sort Options */}
             <div>
               <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                <span>Sort By</span>
+                <span>{t("filterbar.sort_by")}</span>
               </h3>
               <select
                 value={sortBy}
@@ -142,14 +164,16 @@ function FilterBar({
                 disabled={loading || !hasActiveFilters}
                 className="w-full px-4 py-2 text-gray-400 hover:text-white disabled:text-gray-600 disabled:cursor-not-allowed transition-colors border border-gray-600 hover:border-gray-500 rounded-lg"
               >
-                Clear All Filters
+                {t("filterbar.clear_all_filters")}
               </button>
             </div>
           </div>
 
           {/* Genre Filters */}
           <div className="mt-6">
-            <h3 className="text-white font-semibold mb-3">Genres</h3>
+            <h3 className="text-white font-semibold mb-3">
+              {t("filterbar.genres")}
+            </h3>
             <div className="flex flex-wrap gap-2">
               {genres.map((genre) => (
                 <button
@@ -168,27 +192,6 @@ function FilterBar({
               ))}
             </div>
           </div>
-
-          {/* Active Filters Display */}
-          {hasActiveFilters && (
-            <div className="mt-6 pt-4 border-t border-gray-700">
-              <p className="text-gray-400 text-sm mb-2">Active Filters:</p>
-              <div className="flex flex-wrap gap-2">
-                {selectedGenres.length > 0 && (
-                  <span className="px-3 py-1 bg-blue-600 text-white text-sm rounded-full">
-                    {selectedGenres.length} genre
-                    {selectedGenres.length > 1 ? "s" : ""} selected
-                  </span>
-                )}
-                {sortBy !== "popularity.desc" && (
-                  <span className="px-3 py-1 bg-green-600 text-white text-sm rounded-full">
-                    Sort:{" "}
-                    {sortOptions.find((opt) => opt.value === sortBy)?.label}
-                  </span>
-                )}
-              </div>
-            </div>
-          )}
         </div>
       )}
     </div>

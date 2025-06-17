@@ -4,6 +4,8 @@ import MovieCard from "../components/MovieCard";
 import FilterBar from "../components/FilterBar";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useTranslation } from "react-i18next";
+import i18n from "i18next";
 
 interface Movie {
   id: number;
@@ -44,6 +46,7 @@ interface DiscoverFilters {
 }
 
 function Home() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [movies, setMovies] = useState<Movie[]>([]);
   const [genres, setGenres] = useState<Genre[]>([]);
@@ -94,7 +97,7 @@ function Home() {
         console.log("Available genres:", genresList);
       } catch (err) {
         console.error("Error loading initial data:", err);
-        setError("Failed to load movies");
+        setError(t("home.failed_to_load"));
       } finally {
         setLoading(false);
       }
@@ -140,7 +143,7 @@ function Home() {
       console.log("Movies filtered:", moviesData);
     } catch (err) {
       console.error("Error filtering movies:", err);
-      setError("Failed to filter movies");
+      setError(t("home.failed_to_filter"));
     } finally {
       setFilterLoading(false);
     }
@@ -161,9 +164,9 @@ function Home() {
       currentFilters.sortBy !== "popularity.desc";
 
     if (hasFilters) {
-      return `Filtered Movies (${pagination.totalResults.toLocaleString()} found)`;
+      return t("home.filtered_movies", { count: pagination.totalResults });
     }
-    return `Popular Movies (${pagination.totalResults.toLocaleString()} total)`;
+    return t("home.popular_movies", { count: pagination.totalResults });
   };
 
   const renderPagination = () => {
@@ -199,7 +202,7 @@ function Home() {
           disabled={currentPage === 1 || filterLoading}
           className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
         >
-          Previous
+          {t("home.previous")}
         </button>
 
         {pages.map((page, index) => (
@@ -226,17 +229,17 @@ function Home() {
           disabled={currentPage === totalPages || filterLoading}
           className="px-3 py-1 bg-gray-700 text-white rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-600"
         >
-          Next
+          {t("home.next")}
         </button>
       </div>
     );
   };
 
   function formatReleaseDate(dateString?: string): string {
-    if (!dateString) return "Unknown";
+    if (!dateString) return t("home.unknown_date");
     const date = new Date(dateString);
-    if (isNaN(date.getTime())) return "Unknown";
-    return date.toLocaleDateString("en-US", {
+    if (isNaN(date.getTime())) return t("home.unknown_date");
+    return date.toLocaleDateString(i18n.language, {
       year: "numeric",
       month: "long",
       day: "numeric",
@@ -263,11 +266,11 @@ function Home() {
       {loading || filterLoading || authLoading ? (
         <div className="text-center text-gray-400">
           <div className="inline-block w-8 h-8 border-4 border-gray-400 border-t-transparent rounded-full animate-spin mb-2"></div>
-          <p>Loading...</p>
+          <p>{t("home.loading")}</p>
         </div>
       ) : movies.length === 0 ? (
         <div className="text-center text-gray-400 mt-6">
-          No movies found with current filters.
+          {t("home.no_movies_found")}
         </div>
       ) : (
         <>
@@ -277,11 +280,14 @@ function Home() {
               <MovieCard
                 key={movie.id}
                 id={movie.id}
-                title={movie.title || "Unknown Title"}
-                releaseDate={formatReleaseDate(movie.release_date) || "Unknown"}
+                title={movie.title || t("home.unknown_title")}
+                releaseDate={
+                  formatReleaseDate(movie.release_date) ||
+                  t("home.unknown_date")
+                }
                 posterPath={movie.poster_path || ""}
                 voteAverage={movie.vote_average || 0}
-                overview={movie.overview || "No overview available"}
+                overview={movie.overview || t("home.no_overview")}
                 voteCount={movie.vote_count || 0}
                 popularity={movie.popularity || 0}
                 adult={movie.adult || false}

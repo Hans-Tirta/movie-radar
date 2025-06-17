@@ -11,5 +11,92 @@
     "en": "English",
     "id": "Bahasa Indonesia",
     "cn": "简体中文"
+  },
+  "filterbar": {
+    "title": "Filter",
+    "sort_by": "Sort by",
+    "sort_options": {
+      "popularity_desc": "Popularity (desc)",
+      "popularity_asc": "Popularity (asc)",
+      "release_date_desc": "Release Date (desc)",
+      "release_date_asc": "Release Date (asc)",
+      "vote_average_desc": "Vote Average (desc)",
+      "vote_average_asc": "Vote Average (asc)",
+      "title_asc": "Title (A-Z)",
+      "title_desc": "Title (Z-A)"
+    },
+    "show_filters": "Show Filters",
+    "hide_filters": "Hide Filters",
+    "clear_all_filters": "Clear All Filters",
+    "genres": "Genres"
+  },
+  "footer": {
+    "copyright": "© {{year}} MovieRadar.",
+    "uses_api": "This product uses the",
+    "api_text": "API",
+    "not_endorsed": "but is not endorsed or certified by TMDB."
+  },
+  "movieCard": {
+    "add_to_favorites": "Add to favorites",
+    "remove_from_favorites": "Remove from favorites",
+    "no_image": "No Image Available",
+    "overview": "Overview",
+    "votes": "votes",
+    "popularity": "Popularity"
+  },
+  "protectedRoutes": {
+    "loading": "Loading..."
+  },
+  "home": {
+    "filtered_movies": "Filtered Movies ({{count, number}} found)",
+    "popular_movies": "Popular Movies ({{count, number}} total)",
+    "failed_to_load": "Failed to load movies",
+    "failed_to_filter": "Failed to filter movies",
+    "loading": "Loading...",
+    "no_movies_found": "No movies found with current filters.",
+    "previous": "Previous",
+    "next": "Next",
+    "unknown_title": "Unknown Title",
+    "unknown_date": "Unknown",
+    "no_overview": "No overview available"
+  },
+  "favorites": {
+    "title": "Your Favorite Movies",
+    "title_with_count": "Your Favorite Movies ({{count, number}} total)",
+    "loading": "Loading...",
+    "empty_message": "Click on the \"Favorite\" button on a movie to mark it as a favorite."
+  },
+  "search": {
+    "title": "Search for Movies",
+    "searching": "Searching...",
+    "error_title": "Search Error",
+    "no_results": "No results for \"{{query}}\"",
+    "results_found": "Search Results for \"{{query}}\" ({{count, number}} found)",
+    "failed_to_search": "Failed to search movies",
+    "try_different": "Try searching for a different movie title",
+    "loading": "Loading...",
+    "searching_for": "Searching for \"{{query}}\"...",
+    "no_movies_found": "No movies found with current filters.",
+    "previous": "Previous",
+    "next": "Next",
+    "unknown_title": "Unknown Title",
+    "unknown_date": "Unknown",
+    "no_overview": "No overview available"
+  },
+  "movieDetail": {
+    "loading": "Loading detail...",
+    "notFound": "Movie not found",
+    "back": "Back",
+    "goBack": "Go Back",
+    "addToFavorites": "Add to favorites",
+    "removeFromFavorites": "Remove from favorites",
+    "overview": "Overview",
+    "budget": "Budget",
+    "revenue": "Revenue",
+    "popularity": "Popularity",
+    "language": "Language",
+    "original": "Original",
+    "votes": "votes",
+    "noImage": "No Image Available"
   }
 }
