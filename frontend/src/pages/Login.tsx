@@ -2,8 +2,10 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useMovieContext } from "../contexts/MovieContext";
+import { useTranslation } from "react-i18next";
 
 const LoginPage = () => {
+  const { t } = useTranslation();
   const { login } = useAuth();
   const { fetchFavorites } = useMovieContext();
   const [email, setEmail] = useState("");
@@ -24,7 +26,7 @@ const LoginPage = () => {
       // Redirect to home page
       navigate("/");
     } catch (error: any) {
-      setError(error.message || "Login failed. Please try again.");
+      setError(error.message || t("login.loginFailed"));
     } finally {
       setLoading(false);
     }
@@ -33,14 +35,16 @@ const LoginPage = () => {
   return (
     <div className="flex items-center justify-center min-h-screen text-white">
       <div className="w-full max-w-sm p-8 bg-gray-800 rounded-lg shadow-lg">
-        <h2 className="text-3xl font-semibold text-center mb-6">Login</h2>
+        <h2 className="text-3xl font-semibold text-center mb-6">
+          {t("login.title")}
+        </h2>
 
         {error && <div className="text-red-500 text-center mb-4">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="email" className="block text-sm font-medium">
-              Email
+              {t("login.email")}
             </label>
             <input
               type="email"
@@ -55,7 +59,7 @@ const LoginPage = () => {
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium">
-              Password
+              {t("login.password")}
             </label>
             <input
               type="password"
@@ -73,19 +77,19 @@ const LoginPage = () => {
             disabled={loading}
             className="w-full p-3 mt-6 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? t("login.loggingIn") : t("login.loginButton")}
           </button>
         </form>
 
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-400">
-            Don't have an account?{" "}
+            {t("login.noAccount")}{" "}
             <button
               className="text-blue-500 hover:underline"
               onClick={() => navigate("/register")}
               disabled={loading}
             >
-              Register here
+              {t("login.registerHere")}
             </button>
           </p>
         </div>

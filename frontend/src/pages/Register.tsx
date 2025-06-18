@@ -1,7 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const RegisterPage = () => {
+  const { t } = useTranslation();
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,24 +31,26 @@ const RegisterPage = () => {
         // Redirect to login page after successful registration
         navigate("/login");
       } else {
-        setError(data.error || "Registration failed");
+        setError(data.error || t("register.registrationFailed"));
       }
     } catch (error) {
-      setError("Something went wrong. Please try again.");
+      setError(t("register.somethingWrong"));
     }
   };
 
   return (
     <div className="flex items-center justify-center min-h-screen text-white">
       <div className="w-full max-w-sm p-8 bg-gray-800 rounded-lg shadow-lg">
-        <h2 className="text-3xl font-semibold text-center mb-6">Register</h2>
+        <h2 className="text-3xl font-semibold text-center mb-6">
+          {t("register.title")}
+        </h2>
 
         {error && <div className="text-red-500 text-center mb-4">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="username" className="block text-sm font-medium">
-              Username
+              {t("register.username")}
             </label>
             <input
               type="text"
@@ -60,7 +64,7 @@ const RegisterPage = () => {
 
           <div>
             <label htmlFor="email" className="block text-sm font-medium">
-              Email
+              {t("register.email")}
             </label>
             <input
               type="email"
@@ -74,7 +78,7 @@ const RegisterPage = () => {
 
           <div>
             <label htmlFor="password" className="block text-sm font-medium">
-              Password
+              {t("register.password")}
             </label>
             <input
               type="password"
@@ -90,19 +94,19 @@ const RegisterPage = () => {
             type="submit"
             className="w-full p-3 mt-6 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-600"
           >
-            Register
+            {t("register.registerButton")}
           </button>
         </form>
 
         {/* Redirect to Login Page */}
         <div className="mt-6 text-center">
           <p className="text-sm text-gray-400">
-            Already have an account?{" "}
+            {t("register.haveAccount")}{" "}
             <button
               className="text-blue-500 hover:underline"
               onClick={() => navigate("/login")}
             >
-              Login here
+              {t("register.loginHere")}
             </button>
           </p>
         </div>

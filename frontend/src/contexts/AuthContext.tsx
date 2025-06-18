@@ -23,54 +23,39 @@ interface AuthContextType {
   loading: boolean;
 }
 
-// Token Management Class
+// Simplified Token Manager - Pure SessionStorage
 class TokenManager {
   private static readonly ACCESS_TOKEN_KEY = "movie_app_access_token";
   private static readonly REFRESH_TOKEN_KEY = "movie_app_refresh_token";
   private static readonly USER_KEY = "movie_app_user";
 
-  private static memoryAccessToken: string | null = null;
-  private static memoryRefreshToken: string | null = null;
-  private static memoryUser: User | null = null;
-
   static setTokens(accessToken: string, refreshToken: string, user: User) {
-    this.memoryAccessToken = accessToken;
-    this.memoryRefreshToken = refreshToken;
-    this.memoryUser = user;
-
-    // Use sessionStorage instead of localStorage for better security
     sessionStorage.setItem(this.ACCESS_TOKEN_KEY, accessToken);
     sessionStorage.setItem(this.REFRESH_TOKEN_KEY, refreshToken);
     sessionStorage.setItem(this.USER_KEY, JSON.stringify(user));
   }
 
   static getAccessToken(): string | null {
-    return (
-      this.memoryAccessToken || sessionStorage.getItem(this.ACCESS_TOKEN_KEY)
-    );
+    return sessionStorage.getItem(this.ACCESS_TOKEN_KEY);
   }
 
   static getRefreshToken(): string | null {
-    return (
-      this.memoryRefreshToken || sessionStorage.getItem(this.REFRESH_TOKEN_KEY)
-    );
+    return sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
   }
 
   static getUser(): User | null {
-    if (this.memoryUser) return this.memoryUser;
-
     const userStr = sessionStorage.getItem(this.USER_KEY);
     return userStr ? JSON.parse(userStr) : null;
   }
 
   static clearTokens() {
-    this.memoryAccessToken = null;
-    this.memoryRefreshToken = null;
-    this.memoryUser = null;
-
     sessionStorage.removeItem(this.ACCESS_TOKEN_KEY);
     sessionStorage.removeItem(this.REFRESH_TOKEN_KEY);
     sessionStorage.removeItem(this.USER_KEY);
+  }
+
+  static updateUser(user: User) {
+    sessionStorage.setItem(this.USER_KEY, JSON.stringify(user));
   }
 
   static isAccessTokenExpired(): boolean {
@@ -87,17 +72,40 @@ class TokenManager {
   }
 }
 
-// API Service
+// API Service with Race Condition Protection
 class AuthAPI {
   private static readonly BASE_URL = import.meta.env.VITE_AUTH_URL;
+  private static refreshPromise: Promise<{
+    accessToken: string;
+    user: User;
+  } | null> | null = null;
 
   static async refreshToken(): Promise<{
     accessToken: string;
     user: User;
   } | null> {
+    // Prevent multiple simultaneous refresh calls
+    if (this.refreshPromise) {
+      return this.refreshPromise;
+    }
+
     const refreshToken = TokenManager.getRefreshToken();
     if (!refreshToken) return null;
 
+    this.refreshPromise = this.performTokenRefresh(refreshToken);
+
+    try {
+      const result = await this.refreshPromise;
+      return result;
+    } finally {
+      this.refreshPromise = null;
+    }
+  }
+
+  private static async performTokenRefresh(refreshToken: string): Promise<{
+    accessToken: string;
+    user: User;
+  } | null> {
     try {
       const response = await fetch(`${this.BASE_URL}/refresh`, {
         method: "POST",
@@ -129,7 +137,7 @@ class AuthAPI {
     if (!accessToken || TokenManager.isAccessTokenExpired()) {
       const refreshResult = await this.refreshToken();
       if (!refreshResult) {
-        throw new Error("Authentication failed");
+        throw new Error("Authentication failed - please login again");
       }
 
       TokenManager.setTokens(
@@ -140,13 +148,38 @@ class AuthAPI {
       accessToken = refreshResult.accessToken;
     }
 
-    return fetch(url, {
+    const response = await fetch(url, {
       ...options,
       headers: {
         ...options.headers,
         Authorization: `Bearer ${accessToken}`,
       },
     });
+
+    // If we get 401, try to refresh once more
+    if (response.status === 401) {
+      const refreshResult = await this.refreshToken();
+      if (!refreshResult) {
+        throw new Error("Authentication failed - please login again");
+      }
+
+      TokenManager.setTokens(
+        refreshResult.accessToken,
+        TokenManager.getRefreshToken()!,
+        refreshResult.user
+      );
+
+      // Retry the original request with new token
+      return fetch(url, {
+        ...options,
+        headers: {
+          ...options.headers,
+          Authorization: `Bearer ${refreshResult.accessToken}`,
+        },
+      });
+    }
+
+    return response;
   }
 }
 
@@ -163,29 +196,37 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   // Initialize auth state
   useEffect(() => {
     const initializeAuth = async () => {
-      const storedUser = TokenManager.getUser();
-      const accessToken = TokenManager.getAccessToken();
+      try {
+        const storedUser = TokenManager.getUser();
+        const accessToken = TokenManager.getAccessToken();
 
-      if (storedUser && accessToken) {
-        // Check if token is expired
-        if (TokenManager.isAccessTokenExpired()) {
-          // Try to refresh
-          const refreshResult = await AuthAPI.refreshToken();
-          if (refreshResult) {
-            TokenManager.setTokens(
-              refreshResult.accessToken,
-              TokenManager.getRefreshToken()!,
-              refreshResult.user
-            );
-            setUser(refreshResult.user);
+        if (storedUser && accessToken) {
+          // Check if token is expired
+          if (TokenManager.isAccessTokenExpired()) {
+            // Try to refresh
+            const refreshResult = await AuthAPI.refreshToken();
+            if (refreshResult) {
+              TokenManager.setTokens(
+                refreshResult.accessToken,
+                TokenManager.getRefreshToken()!,
+                refreshResult.user
+              );
+              setUser(refreshResult.user);
+            } else {
+              TokenManager.clearTokens();
+              setUser(null);
+            }
           } else {
-            TokenManager.clearTokens();
+            setUser(storedUser);
           }
-        } else {
-          setUser(storedUser);
         }
+      } catch (error) {
+        console.error("Auth initialization failed:", error);
+        TokenManager.clearTokens();
+        setUser(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     initializeAuth();
@@ -196,57 +237,60 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     if (!user) return;
 
     const interval = setInterval(async () => {
-      if (TokenManager.isAccessTokenExpired()) {
-        const refreshResult = await AuthAPI.refreshToken();
-        if (refreshResult) {
-          TokenManager.setTokens(
-            refreshResult.accessToken,
-            TokenManager.getRefreshToken()!,
-            refreshResult.user
-          );
-          setUser(refreshResult.user);
-        } else {
-          setUser(null);
+      try {
+        if (TokenManager.isAccessTokenExpired()) {
+          const refreshResult = await AuthAPI.refreshToken();
+          if (refreshResult) {
+            TokenManager.setTokens(
+              refreshResult.accessToken,
+              TokenManager.getRefreshToken()!,
+              refreshResult.user
+            );
+            setUser(refreshResult.user);
+          } else {
+            setUser(null);
+          }
         }
+      } catch (error) {
+        console.error("Auto-refresh failed:", error);
+        setUser(null);
       }
     }, 5 * 60 * 1000); // Check every 5 minutes
 
     return () => clearInterval(interval);
   }, [user]);
 
-  // Cleanup on page unload
-  useEffect(() => {
-    const handleBeforeUnload = () => {
-      // Optional: Clear tokens on page close for extra security
-      // TokenManager.clearTokens();
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, []);
-
   const login = async (email: string, password: string) => {
-    const response = await fetch(`${import.meta.env.VITE_AUTH_URL}/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
+    try {
+      const response = await fetch(`${import.meta.env.VITE_AUTH_URL}/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
 
-    const data = await response.json();
+      const data = await response.json();
 
-    if (!response.ok) {
-      throw new Error(data.message || "Login failed");
+      if (!response.ok) {
+        throw new Error(data.message || "Login failed");
+      }
+
+      TokenManager.setTokens(data.accessToken, data.refreshToken, data.user);
+      setUser(data.user);
+    } catch (error) {
+      console.error("Login failed:", error);
+      throw error;
     }
-
-    // Backend now returns accessToken and refreshToken
-    TokenManager.setTokens(data.accessToken, data.refreshToken, data.user);
-    setUser(data.user);
   };
 
   const logout = async () => {
     const accessToken = TokenManager.getAccessToken();
     const refreshToken = TokenManager.getRefreshToken();
 
+    // Always clear local tokens first
+    TokenManager.clearTokens();
+    setUser(null);
+
+    // Then notify backend (don't fail logout if this fails)
     if (accessToken) {
       try {
         await fetch(`${import.meta.env.VITE_AUTH_URL}/logout`, {
@@ -258,17 +302,20 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           body: JSON.stringify({ refreshToken }),
         });
       } catch (error) {
-        console.error("Logout request failed:", error);
+        console.error("Backend logout failed:", error);
+        // Don't throw error - local logout already succeeded
       }
     }
-
-    TokenManager.clearTokens();
-    setUser(null);
   };
 
   const logoutAll = async () => {
     const accessToken = TokenManager.getAccessToken();
 
+    // Always clear local tokens first
+    TokenManager.clearTokens();
+    setUser(null);
+
+    // Then notify backend (don't fail logout if this fails)
     if (accessToken) {
       try {
         await fetch(`${import.meta.env.VITE_AUTH_URL}/logout-all`, {
@@ -279,24 +326,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
           },
         });
       } catch (error) {
-        console.error("Logout all request failed:", error);
+        console.error("Backend logout-all failed:", error);
+        // Don't throw error - local logout already succeeded
       }
     }
-
-    TokenManager.clearTokens();
-    setUser(null);
   };
 
   const updateUser = (updatedUser: User) => {
     setUser(updatedUser);
-    // Also update in sessionStorage
-    if (TokenManager.getAccessToken() && TokenManager.getRefreshToken()) {
-      TokenManager.setTokens(
-        TokenManager.getAccessToken()!,
-        TokenManager.getRefreshToken()!,
-        updatedUser
-      );
-    }
+    TokenManager.updateUser(updatedUser);
   };
 
   return (

@@ -8,6 +8,7 @@ import {
 } from "../services/profileApi";
 import { User, Lock, Trash2, Edit, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 
 interface UserProfile {
   id: string;
@@ -17,6 +18,7 @@ interface UserProfile {
 }
 
 function Profile() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -71,7 +73,7 @@ function Profile() {
       setNewUsername(profileData.user.username);
     } catch (err) {
       console.error("Error fetching profile:", err);
-      setError("Failed to load profile");
+      setError(t("profile.failedToLoadProfile"));
 
       // If unauthorized, redirect to login
       if (err instanceof Error && err.message.includes("401")) {
@@ -107,7 +109,7 @@ function Profile() {
     } catch (err) {
       console.error("Error updating username:", err);
       setError(
-        err instanceof Error ? err.message : "Failed to update username"
+        err instanceof Error ? err.message : t("profile.failedToUpdateUsername")
       );
       setNewUsername(profile?.username || "");
     } finally {
@@ -117,17 +119,17 @@ function Profile() {
 
   const handlePasswordUpdate = async () => {
     if (!currentPassword || !newPassword || !confirmPassword) {
-      setError("All password fields are required");
+      setError(t("profile.allPasswordFieldsRequired"));
       return;
     }
 
     if (newPassword !== confirmPassword) {
-      setError("New passwords do not match");
+      setError(t("profile.passwordsDoNotMatch"));
       return;
     }
 
     if (newPassword.length < 6) {
-      setError("New password must be at least 6 characters");
+      setError(t("profile.passwordMinLength"));
       return;
     }
 
@@ -141,12 +143,12 @@ function Profile() {
       setNewPassword("");
       setConfirmPassword("");
       // Show success message briefly
-      setError("Password updated successfully!");
+      setError(t("profile.passwordUpdatedSuccess"));
       setTimeout(() => setError(""), 3000);
     } catch (err) {
       console.error("Error updating password:", err);
       setError(
-        err instanceof Error ? err.message : "Failed to update password"
+        err instanceof Error ? err.message : t("profile.failedToUpdatePassword")
       );
     } finally {
       setPasswordLoading(false);
@@ -163,7 +165,9 @@ function Profile() {
       navigate("/login");
     } catch (err) {
       console.error("Error deleting profile:", err);
-      setError(err instanceof Error ? err.message : "Failed to delete profile");
+      setError(
+        err instanceof Error ? err.message : t("profile.failedToDeleteProfile")
+      );
       setDeleteLoading(false);
     }
   };
@@ -192,7 +196,7 @@ function Profile() {
       <div className="min-h-screen p-6 flex items-center justify-center">
         <div className="text-center text-gray-400">
           <div className="inline-block w-8 h-8 border-4 border-gray-400 border-t-transparent rounded-full animate-spin mb-2"></div>
-          <p>Loading profile...</p>
+          <p>{t("profile.loading")}</p>
         </div>
       </div>
     );
@@ -202,12 +206,12 @@ function Profile() {
     return (
       <div className="min-h-screen p-6 flex items-center justify-center">
         <div className="text-center text-red-500">
-          <p>Failed to load profile</p>
+          <p>{t("profile.failedToLoad")}</p>
           <button
             onClick={fetchProfile}
             className="mt-4 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
           >
-            Retry
+            <button>{t("profile.retry")}</button>
           </button>
         </div>
       </div>
@@ -218,7 +222,7 @@ function Profile() {
     <div className="min-h-screen p-6">
       <div className="max-w-2xl mx-auto">
         <h2 className="text-3xl font-bold text-center mb-8">
-          Profile Settings
+          {t("profile.title")}
         </h2>
 
         {error && (
@@ -237,7 +241,7 @@ function Profile() {
           {/* Email (Read-only) */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-300">
-              Email
+              {t("profile.email")}
             </label>
             <div className="flex items-center space-x-3 p-3 bg-gray-700 rounded-lg">
               <User size={20} className="text-gray-400" />
@@ -248,7 +252,7 @@ function Profile() {
           {/* Username */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-300">
-              Username
+              {t("profile.username")}
             </label>
             {isEditingUsername ? (
               <div className="space-y-3">
@@ -257,7 +261,7 @@ function Profile() {
                   value={newUsername}
                   onChange={(e) => setNewUsername(e.target.value)}
                   className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  placeholder="Enter new username"
+                  placeholder={t("profile.enterNewUsername")}
                   disabled={usernameLoading}
                 />
                 <div className="flex space-x-2">
@@ -266,14 +270,14 @@ function Profile() {
                     disabled={usernameLoading}
                     className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {usernameLoading ? "Saving..." : "Save"}
+                    {usernameLoading ? t("profile.saving") : t("profile.save")}
                   </button>
                   <button
                     onClick={cancelEdit}
                     disabled={usernameLoading}
                     className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
                   >
-                    Cancel
+                    {t("profile.cancel")}
                   </button>
                 </div>
               </div>
@@ -286,7 +290,7 @@ function Profile() {
                 <button
                   onClick={() => setIsEditingUsername(true)}
                   className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
-                  title="Edit username"
+                  title={t("profile.editUsername")}
                 >
                   <Edit size={16} />
                 </button>
@@ -297,7 +301,7 @@ function Profile() {
           {/* Password */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-300">
-              Password
+              {t("profile.password")}
             </label>
             {isEditingPassword ? (
               <div className="space-y-3">
@@ -307,7 +311,7 @@ function Profile() {
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
                     className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500 pr-12"
-                    placeholder="Current password"
+                    placeholder={t("profile.currentPassword")}
                     disabled={passwordLoading}
                   />
                   <button
@@ -328,7 +332,7 @@ function Profile() {
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
                     className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500 pr-12"
-                    placeholder="New password"
+                    placeholder={t("profile.newPassword")}
                     disabled={passwordLoading}
                   />
                   <button
@@ -344,7 +348,7 @@ function Profile() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  placeholder="Confirm new password"
+                  placeholder={t("profile.confirmNewPassword")}
                   disabled={passwordLoading}
                 />
                 <div className="flex space-x-2">
@@ -353,14 +357,16 @@ function Profile() {
                     disabled={passwordLoading}
                     className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    {passwordLoading ? "Updating..." : "Update Password"}
+                    {passwordLoading
+                      ? t("profile.updating")
+                      : t("profile.updatePassword")}
                   </button>
                   <button
                     onClick={cancelEdit}
                     disabled={passwordLoading}
                     className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
                   >
-                    Cancel
+                    {t("profile.cancel")}
                   </button>
                 </div>
               </div>
@@ -373,7 +379,7 @@ function Profile() {
                 <button
                   onClick={() => setIsEditingPassword(true)}
                   className="p-2 text-gray-400 hover:text-blue-400 transition-colors"
-                  title="Change password"
+                  title={t("profile.changePassword")}
                 >
                   <Edit size={16} />
                 </button>
@@ -384,7 +390,7 @@ function Profile() {
           {/* Member Since */}
           <div className="space-y-2">
             <label className="block text-sm font-medium text-gray-300">
-              Member Since
+              {t("profile.memberSince")}
             </label>
             <div className="flex items-center space-x-3 p-3 bg-gray-700 rounded-lg">
               <User size={20} className="text-gray-400" />
@@ -398,17 +404,16 @@ function Profile() {
           <div className="pt-6 border-t border-gray-700">
             <div className="space-y-2">
               <label className="block text-sm font-medium text-red-400">
-                Danger Zone
+                {t("profile.dangerZone")}
               </label>
               <div className="p-4 bg-red-900/20 border border-red-700 rounded-lg">
                 <p className="text-sm text-red-300 mb-3">
-                  Once you delete your account, there is no going back. This
-                  will permanently delete your profile and all your favorites.
+                  {t("profile.deleteWarning")}
                 </p>
                 {showDeleteConfirm ? (
                   <div className="space-y-3">
                     <p className="text-sm text-red-200 font-medium">
-                      Are you absolutely sure? This action cannot be undone.
+                      {t("profile.deleteConfirm")}
                     </p>
                     <div className="flex space-x-2">
                       <button
@@ -419,8 +424,8 @@ function Profile() {
                         <Trash2 size={16} />
                         <span>
                           {deleteLoading
-                            ? "Deleting..."
-                            : "Yes, Delete My Account"}
+                            ? t("profile.deleting")
+                            : t("profile.yesDeleteAccount")}
                         </span>
                       </button>
                       <button
@@ -428,7 +433,7 @@ function Profile() {
                         disabled={deleteLoading}
                         className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
                       >
-                        Cancel
+                        {t("profile.cancel")}
                       </button>
                     </div>
                   </div>
@@ -438,7 +443,7 @@ function Profile() {
                     className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 flex items-center space-x-2"
                   >
                     <Trash2 size={16} />
-                    <span>Delete Account</span>
+                    <span>{t("profile.deleteAccount")}</span>
                   </button>
                 )}
               </div>
