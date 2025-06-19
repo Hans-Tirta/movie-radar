@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useMovieContext } from "../contexts/MovieContext";
 import { Heart, Star, Calendar, Users, Info } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import i18n from "i18next";
 
 interface MovieCardProps {
   id: number;
@@ -96,6 +97,17 @@ function MovieCard({
     overview && overview.length > 500
       ? overview.substring(0, 500) + "..."
       : overview;
+
+  function formatReleaseDate(dateString?: string): string {
+    if (!dateString) return t("home.unknown_date");
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return t("home.unknown_date");
+    return date.toLocaleDateString(i18n.language, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
 
   return (
     <div
@@ -200,7 +212,7 @@ function MovieCard({
             <div className="flex items-center justify-between text-sm">
               <div className="flex items-center gap-1 text-gray-300">
                 <Calendar size={14} />
-                <span>{releaseDate}</span>
+                <span>{formatReleaseDate(releaseDate)}</span>
               </div>
               <div className="flex items-center gap-1 text-yellow-400">
                 <Star size={14} className="fill-yellow-400" />

@@ -12,6 +12,7 @@ import {
   DollarSign,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import i18n from "i18next";
 
 interface MovieDetailData {
   id: number;
@@ -173,6 +174,17 @@ function MovieDetail() {
     ? `https://image.tmdb.org/t/p/w500${movie.posterPath}`
     : null;
 
+  function formatReleaseDate(dateString?: string): string {
+    if (!dateString) return t("home.unknown_date");
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return t("home.unknown_date");
+    return date.toLocaleDateString(i18n.language, {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+  }
+
   return (
     <div className="min-h-screen bg-gray-900 relative">
       {/* Background with blur effect */}
@@ -293,7 +305,7 @@ function MovieDetail() {
                 </div>
                 <div className="flex items-center gap-2 text-gray-300">
                   <Calendar size={16} />
-                  <span>{movie.releaseDate}</span>
+                  <span>{formatReleaseDate(movie.releaseDate)}</span>
                 </div>
                 {movie.runtime && (
                   <div className="flex items-center gap-2 text-gray-300">

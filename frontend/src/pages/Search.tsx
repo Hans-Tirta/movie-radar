@@ -4,7 +4,6 @@ import { searchMovies } from "../services/api";
 import MovieCard from "../components/MovieCard";
 import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
-import i18n from "i18next";
 
 interface Movie {
   id: number;
@@ -184,17 +183,6 @@ function Search() {
     );
   };
 
-  function formatReleaseDate(dateString?: string): string {
-    if (!dateString) return t("search.unknown_date");
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return t("search.unknown_date");
-    return date.toLocaleDateString(i18n.language, {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  }
-
   return (
     <div className="min-h-screen p-6">
       <h2 className="text-3xl font-bold text-center mb-6">
@@ -237,10 +225,7 @@ function Search() {
                 key={movie.id}
                 id={movie.id}
                 title={movie.title || t("search.unknown_title")}
-                releaseDate={
-                  formatReleaseDate(movie.release_date) ||
-                  t("search.unknown_date")
-                }
+                releaseDate={movie.release_date || t("search.unknown_date")}
                 posterPath={movie.poster_path || ""}
                 voteAverage={movie.vote_average || 0}
                 overview={movie.overview || t("search.no_overview")}

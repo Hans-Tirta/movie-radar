@@ -5,7 +5,6 @@ import FilterBar from "../components/FilterBar";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
-import i18n from "i18next";
 
 interface Movie {
   id: number;
@@ -235,17 +234,6 @@ function Home() {
     );
   };
 
-  function formatReleaseDate(dateString?: string): string {
-    if (!dateString) return t("home.unknown_date");
-    const date = new Date(dateString);
-    if (isNaN(date.getTime())) return t("home.unknown_date");
-    return date.toLocaleDateString(i18n.language, {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  }
-
   return (
     <div className="min-h-screen p-6">
       <h2 className="text-3xl font-bold text-center mb-6">
@@ -282,7 +270,7 @@ function Home() {
                 id={movie.id}
                 title={movie.title || t("home.unknown_title")}
                 releaseDate={
-                  formatReleaseDate(movie.release_date) ||
+                  movie.release_date ||
                   t("home.unknown_date")
                 }
                 posterPath={movie.poster_path || ""}

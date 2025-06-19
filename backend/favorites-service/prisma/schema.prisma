@@ -14,16 +14,11 @@ datasource db {
 }
 
 model Favorite {
-  id          String  @id @default(uuid())
-  userId      String
-  movieId     Int
-  title       String
-  releaseDate String
-  posterPath  String
-  overview    String?
-  voteAverage Float?
-  voteCount   Int?
-  popularity  Float?
-  adult       Boolean? @default(false)
-  genres      String?  // Store as comma-separated string like "Action,Adventure,Sci-Fi"
+  id        String   @id @default(uuid())
+  userId    String
+  movieId   Int      // TMDB movie ID
+  adult     Boolean? @default(false) // Language-neutral content filter
+  dateAdded DateTime @default(now()) // When user added to favorites
+  
+  @@unique([userId, movieId]) // Prevent duplicate favorites
 }
