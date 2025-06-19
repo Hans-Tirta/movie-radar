@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { getPopularMovies, getGenres, discoverMovies } from "../services/api";
 import MovieCard from "../components/MovieCard";
 import FilterBar from "../components/FilterBar";
+import LoadMoreCard from "../components/LoadMoreCard";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
@@ -269,10 +270,7 @@ function Home() {
                 key={movie.id}
                 id={movie.id}
                 title={movie.title || t("home.unknown_title")}
-                releaseDate={
-                  movie.release_date ||
-                  t("home.unknown_date")
-                }
+                releaseDate={movie.release_date || t("home.unknown_date")}
                 posterPath={movie.poster_path || ""}
                 voteAverage={movie.vote_average || 0}
                 overview={movie.overview || t("home.no_overview")}
@@ -282,6 +280,15 @@ function Home() {
                 genres={movie.genres || []}
               />
             ))}
+
+            {movies.length % 3 !== 0 &&
+              pagination.currentPage < pagination.totalPages && (
+                <div className="hidden 2xl:block">
+                  <LoadMoreCard
+                    onClick={() => handlePageChange(pagination.currentPage + 1)}
+                  />
+                </div>
+              )}
           </div>
 
           {/* Pagination */}

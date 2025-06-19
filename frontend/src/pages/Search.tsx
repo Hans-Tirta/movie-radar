@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { searchMovies } from "../services/api";
 import MovieCard from "../components/MovieCard";
+import LoadMoreCard from "../components/LoadMoreCard";
 import { useAuth } from "../contexts/AuthContext";
 import { useTranslation } from "react-i18next";
 
@@ -235,6 +236,15 @@ function Search() {
                 genres={movie.genres || []}
               />
             ))}
+
+            {movies.length % 3 !== 0 &&
+              pagination.currentPage < pagination.totalPages && (
+                <div className="hidden 2xl:block">
+                  <LoadMoreCard
+                    onClick={() => handlePageChange(pagination.currentPage + 1)}
+                  />
+                </div>
+              )}
           </div>
 
           {/* Pagination */}

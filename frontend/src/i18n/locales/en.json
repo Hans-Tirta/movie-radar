@@ -58,7 +58,8 @@
     "next": "Next",
     "unknown_title": "Unknown Title",
     "unknown_date": "Unknown",
-    "no_overview": "No overview available"
+    "no_overview": "No overview available",
+    "load_more": "Load More Movies"
   },
   "favorites": {
     "title": "Your Favorite Movies",

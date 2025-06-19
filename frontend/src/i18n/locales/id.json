@@ -58,7 +58,8 @@
     "next": "Selanjutnya",
     "unknown_title": "Judul Tidak Diketahui",
     "unknown_date": "Tidak Diketahui",
-    "no_overview": "Sinopsis tidak tersedia"
+    "no_overview": "Sinopsis tidak tersedia",
+    "load_more": "Muat lebih banyak"
   },
   "favorites": {
     "title": "Film Favorit Anda",
