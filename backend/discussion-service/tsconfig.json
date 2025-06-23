@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "target": "ES6", // Transpiles TypeScript to ES6 JavaScript.
+    "module": "CommonJS", // Uses CommonJS module system (required for Node.js).
+    "outDir": "dist", // Outputs compiled JavaScript files in the "dist" folder.
+    "rootDir": "src", // Specifies "src" as the folder containing TypeScript files.
+    "strict": true, // Enables strict type checking for safer code.
+    "esModuleInterop": true // allows to import default export from module
+  }
+}

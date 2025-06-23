@@ -1,0 +1,112 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Discussion {
+  id        String   @id @default(cuid())
+  title     String
+  content   String
+  category  DiscussionCategory @default(GENERAL)
+  
+  // Movie context
+  movieId   Int      // TMDB movie ID
+  
+  // User context (we'll store userId from auth service)
+  userId    String
+  username  String   // Denormalized for performance
+  
+  // Engagement
+  upvotes   Int      @default(0)
+  downvotes Int      @default(0)
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  // Relations
+  comments  Comment[]
+  votes     DiscussionVote[]
+  
+  @@map("Discussion")
+}
+
+model Comment {
+  id           String   @id @default(cuid())
+  content      String
+  
+  // Relations
+  discussionId String
+  discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  
+  // User context
+  userId       String
+  username     String   // Denormalized for performance
+  
+  // Nested comments (self-referential)
+  parentId     String?
+  parent       Comment? @relation("CommentReplies", fields: [parentId], references: [id])
+  replies      Comment[] @relation("CommentReplies")
+  
+  // Engagement
+  upvotes      Int      @default(0)
+  downvotes    Int      @default(0)
+  
+  // Timestamps
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  // Relations
+  votes        CommentVote[]
+  
+  @@map("Comment")
+}
+
+model DiscussionVote {
+  id           String     @id @default(cuid())
+  userId       String
+  discussionId String
+  voteType     VoteType   // UPVOTE or DOWNVOTE
+  createdAt    DateTime   @default(now())
+  
+  discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  
+  // Prevent duplicate votes from same user
+  @@unique([userId, discussionId])
+  @@map("DiscussionVote")
+}
+
+model CommentVote {
+  id        String   @id @default(cuid())
+  userId    String
+  commentId String
+  voteType  VoteType // UPVOTE or DOWNVOTE
+  createdAt DateTime @default(now())
+  
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  
+  // Prevent duplicate votes from same user
+  @@unique([userId, commentId])
+  @@map("CommentVote")
+}
+
+enum DiscussionCategory {
+  GENERAL
+  OFF_TOPIC
+  TECHNICAL
+}
+
+enum VoteType {
+  UPVOTE
+  DOWNVOTE
+}
