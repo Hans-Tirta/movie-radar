@@ -42,7 +42,16 @@ export const getDiscussionsByMovie = asyncHandler(
     const { movieId } = req.params;
     const page = parseInt(req.query.page as string) || 1;
     const limit = parseInt(req.query.limit as string) || 10;
+    const sortBy = (req.query.sortBy as string) || "newest";
     const skip = (page - 1) * limit;
+
+    let orderBy: any = { createdAt: "desc" };
+
+    if (sortBy === "oldest") {
+      orderBy = { createdAt: "asc" };
+    } else if (sortBy === "most_upvoted") {
+      orderBy = { upvotes: "desc" };
+    }
 
     const discussions = await prisma.discussion.findMany({
       where: { movieId: parseInt(movieId) },
@@ -51,7 +60,7 @@ export const getDiscussionsByMovie = asyncHandler(
           select: { comments: true },
         },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy,
       skip,
       take: limit,
     });
@@ -62,12 +71,8 @@ export const getDiscussionsByMovie = asyncHandler(
 
     res.json({
       discussions,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit),
-      },
+      totalPages: Math.ceil(total / limit),
+      totalCount: total,
     });
   }
 );
@@ -83,7 +88,7 @@ export const getAllDiscussions = asyncHandler(
     let orderBy: any = { createdAt: "desc" };
 
     switch (sortBy) {
-      case "upvotes":
+      case "most_upvoted":
         orderBy = { upvotes: "desc" };
         break;
       case "comments":

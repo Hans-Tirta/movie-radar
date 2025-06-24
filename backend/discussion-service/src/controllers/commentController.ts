@@ -70,7 +70,7 @@ export const createComment = asyncHandler(
   }
 );
 
-// Get comments for a discussion (with nested structure)
+// Get comments for a discussion (with flat structure for frontend hierarchy building)
 export const getCommentsByDiscussion = asyncHandler(
   async (req: Request, res: Response) => {
     const { discussionId } = req.params;
@@ -88,48 +88,55 @@ export const getCommentsByDiscussion = asyncHandler(
       return;
     }
 
+    // Determine sorting order
     let orderBy: any = { createdAt: "asc" };
-    switch (sortBy) {
-      case "newest":
-        orderBy = { createdAt: "desc" };
-        break;
-      case "upvotes":
-        orderBy = { upvotes: "desc" };
-        break;
+    if (sortBy === "newest") {
+      orderBy = { createdAt: "desc" };
+    } else if (sortBy === "most_upvoted") {
+      orderBy = { upvotes: "desc" };
     }
 
-    const comments = await prisma.comment.findMany({
+    // Fetch sorted and paginated top-level comments
+    const topLevelComments = await prisma.comment.findMany({
       where: {
         discussionId,
         parentId: null,
       },
+      orderBy,
+      skip,
+      take: limit,
       include: {
-        replies: {
-          include: {
-            replies: {
-              include: {
-                replies: true,
-                _count: {
-                  select: { replies: true },
-                },
-              },
-              orderBy: { createdAt: "asc" },
-            },
-            _count: {
-              select: { replies: true },
-            },
-          },
-          orderBy: { createdAt: "asc" },
-        },
         _count: {
           select: { replies: true },
         },
       },
-      orderBy,
-      skip,
-      take: limit,
     });
 
+    const topLevelIds = topLevelComments.map((c) => c.id);
+
+    // Recursively collect all replies
+    const getAllReplies = async (parentIds: string[]): Promise<any[]> => {
+      if (parentIds.length === 0) return [];
+
+      const replies = await prisma.comment.findMany({
+        where: {
+          parentId: { in: parentIds },
+        },
+        include: {
+          _count: {
+            select: { replies: true },
+          },
+        },
+      });
+
+      const replyIds = replies.map((r) => r.id);
+      const nested = await getAllReplies(replyIds);
+      return [...replies, ...nested];
+    };
+
+    const replies = await getAllReplies(topLevelIds);
+
+    // Total count of top-level comments for pagination
     const totalTopLevel = await prisma.comment.count({
       where: {
         discussionId,
@@ -137,19 +144,10 @@ export const getCommentsByDiscussion = asyncHandler(
       },
     });
 
-    const totalAll = await prisma.comment.count({
-      where: { discussionId },
-    });
-
     res.json({
-      comments,
-      pagination: {
-        page,
-        limit,
-        totalTopLevel,
-        totalAll,
-        pages: Math.ceil(totalTopLevel / limit),
-      },
+      comments: [...topLevelComments, ...replies], // top-level are sorted
+      totalPages: Math.ceil(totalTopLevel / limit),
+      totalCount: totalTopLevel,
     });
   }
 );

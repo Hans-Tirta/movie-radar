@@ -10,8 +10,11 @@ import {
   Clock,
   Globe,
   DollarSign,
+  MessageCircle,
+  ArrowRight,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { getMovieDiscussions, Discussion } from "../services/discussionApi";
 import i18n from "i18next";
 
 interface MovieDetailData {
@@ -34,6 +37,11 @@ interface MovieDetailData {
   originalTitle?: string;
 }
 
+interface DiscussionPreview {
+  discussions: Discussion[];
+  totalCount: number;
+}
+
 function MovieDetail() {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
@@ -46,6 +54,10 @@ function MovieDetail() {
 
   const movieId = id ? parseInt(id) : 0;
   const favorite = isFavorite(movieId);
+
+  const [discussionPreview, setDiscussionPreview] =
+    useState<DiscussionPreview | null>(null);
+  const [discussionLoading, setDiscussionLoading] = useState(false);
 
   useEffect(() => {
     const fetchMovieDetails = async () => {
@@ -91,6 +103,34 @@ function MovieDetail() {
 
     fetchMovieDetails();
   }, [id, movieId]);
+
+  useEffect(() => {
+    const fetchDiscussionPreview = async () => {
+      if (!movieId) return;
+
+      try {
+        setDiscussionLoading(true);
+        const data = await getMovieDiscussions(movieId, 1, 3, "newest");
+        setDiscussionPreview({
+          discussions: data.discussions,
+          totalCount: data.totalCount,
+        });
+      } catch (error) {
+        console.error("Error fetching discussion preview:", error);
+        // Set empty state instead of leaving as null on error
+        setDiscussionPreview({
+          discussions: [],
+          totalCount: 0,
+        });
+      } finally {
+        setDiscussionLoading(false);
+      }
+    };
+
+    if (movie) {
+      fetchDiscussionPreview();
+    }
+  }, [movieId, movie]);
 
   const onFavoriteClick = async () => {
     if (!movie) return;
@@ -199,19 +239,15 @@ function MovieDetail() {
 
       {/* Content */}
       <div className="relative z-10">
-        {/* Header with back button */}
-        <div className="p-6">
+        {/* Main content */}
+        <div className="max-w-6xl mx-auto px-6 py-8">
           <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors"
+            onClick={() => navigate("/")}
+            className="flex items-center gap-2 text-gray-300 hover:text-white transition-colors mb-4"
           >
             <ArrowLeft size={20} />
             <span>{t("movieDetail.back")}</span>
           </button>
-        </div>
-
-        {/* Main content */}
-        <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Left side - Poster */}
             <div className="lg:w-80 flex-shrink-0">
@@ -378,6 +414,113 @@ function MovieDetail() {
                 )}
               </div>
             </div>
+          </div>
+          {/* Bottom side - Discussion Preview */}
+          {/* Discussion Preview Section */}
+          <div className="mt-12 space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-2xl font-semibold text-white flex items-center gap-2">
+                <MessageCircle size={24} />
+                {t("movieDetail.discussions")}
+              </h2>
+              <button
+                onClick={() => navigate(`/movie/${movieId}/discussions`)}
+                className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors"
+              >
+                <span>{t("movieDetail.viewAllDiscussions")}</span>
+                <ArrowRight size={16} />
+              </button>
+            </div>
+
+            {discussionLoading ? (
+              <div className="text-center py-8">
+                <div className="inline-block w-6 h-6 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-gray-400 mt-2">
+                  {t("movieDetail.loadingDiscussions")}
+                </p>
+              </div>
+            ) : discussionPreview &&
+              discussionPreview.discussions &&
+              discussionPreview.discussions.length > 0 ? (
+              <div className="space-y-4">
+                <div className="bg-gray-800 rounded-lg p-4">
+                  <div className="flex items-center justify-between text-sm text-gray-400 mb-4">
+                    <span>
+                      {discussionPreview.totalCount}{" "}
+                      {t("movieDetail.discussionsCount")}
+                    </span>
+                    <span>{t("movieDetail.recentActivity")}</span>
+                  </div>
+
+                  <div className="space-y-3">
+                    {discussionPreview.discussions.map((discussion) => (
+                      <div
+                        key={discussion.id}
+                        onClick={() =>
+                          navigate(
+                            `/movie/${movieId}/discussions/${discussion.id}`
+                          )
+                        }
+                        className="bg-gray-700 rounded-lg p-4 cursor-pointer hover:bg-gray-600 transition-colors"
+                      >
+                        <h3 className="text-white font-medium mb-2 line-clamp-1">
+                          {discussion.title}
+                        </h3>
+                        <p className="text-gray-300 text-sm mb-3 line-clamp-2">
+                          {discussion.content}
+                        </p>
+                        <div className="flex items-center justify-between text-xs text-gray-400">
+                          <div className="flex items-center gap-4">
+                            <span>
+                              {t("movieDetail.byUser", {
+                                username: discussion.username,
+                              })}
+                            </span>
+                            <span>
+                              {new Date(
+                                discussion.createdAt
+                              ).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span>
+                              {t("movieDetail.votesCount", {
+                                count:
+                                  discussion.upvotes - discussion.downvotes,
+                              })}
+                            </span>
+                            <span>
+                              {t("movieDetail.commentsCount", {
+                                count: discussion._count?.comments || 0,
+                              })}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-gray-800 rounded-lg p-8 text-center">
+                <MessageCircle
+                  size={48}
+                  className="text-gray-600 mx-auto mb-4"
+                />
+                <h3 className="text-white font-medium mb-2">
+                  {t("movieDetail.noDiscussions")}
+                </h3>
+                <p className="text-gray-400 mb-4">
+                  {t("movieDetail.startDiscussion")}
+                </p>
+                <button
+                  onClick={() => navigate(`/movie/${movieId}/discussions`)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  {t("movieDetail.createFirstDiscussion")}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </div>

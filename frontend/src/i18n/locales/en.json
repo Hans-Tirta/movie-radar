@@ -98,7 +98,18 @@
     "language": "Language",
     "original": "Original",
     "votes": "votes",
-    "noImage": "No Image Available"
+    "noImage": "No Image Available",
+    "byUser": "by {{username}}",
+    "votesCount": "{{count}} votes",
+    "commentsCount": "{{count}} comments",
+    "discussions": "Discussions",
+    "viewAllDiscussions": "View All",
+    "loadingDiscussions": "Loading discussions...",
+    "discussionsCount": "discussions",
+    "recentActivity": "Recent Activity",
+    "noDiscussions": "No discussions yet",
+    "startDiscussion": "Be the first to start a conversation about this movie!",
+    "createFirstDiscussion": "Start Discussion"
   },
   "logout": {
     "title": "Logout Options",
@@ -166,5 +177,64 @@
     "failedToUpdatePassword": "Failed to update password",
     "failedToDeleteProfile": "Failed to delete profile",
     "failedToLoadProfile": "Failed to load profile"
+  },
+  "discussion": {
+    "loadingDiscussions": "Loading discussions...",
+    "back_to_discussions": "Back to Discussions",
+    "sort_by": "Sort by:",
+    "sort_newest": "Newest",
+    "sort_oldest": "Oldest",
+    "sort_most_upvoted": "Most Upvoted",
+    "comments_title": "Comments",
+    "loading_comments": "Loading comments...",
+    "no_comments": "No comments yet",
+    "prompt_logged_in": "Be the first to share your thoughts!",
+    "prompt_logged_out": "Sign in to join the discussion.",
+    "by_user": "by {{username}}",
+    "comments_count": "comments",
+    "add_comment": "Add a Comment",
+    "placeholder_comment": "Share your thoughts...",
+    "posting": "Posting...",
+    "post": "Post Comment",
+    "placeholder_reply": "Write a reply...",
+    "sending": "Sending...",
+    "reply": "Reply",
+    "replies_count": "{{count}} replies",
+    "show_replies": "Show replies",
+    "hide_replies": "Hide replies"
+  },
+  "movieDiscussions": {
+    "newDiscussion": "New Discussion",
+    "goBack": "Go Back",
+    "loadingDiscussions": "Loading discussions...",
+    "movieDiscussionHeader": {
+      "backToMovie": "Back to Movie",
+      "discussions": "Discussions ({{count}})"
+    },
+    "discussionSortControl": {
+      "sortBy": "Sort by",
+      "newest": "Newest",
+      "oldest": "Oldest",
+      "mostUpvoted": "Most Upvoted"
+    },
+    "discussionList": {
+      "by": "by",
+      "comments": "comments"
+    },
+    "createDiscussionModal": {
+      "title": "New Discussion",
+      "titleLabel": "Title",
+      "contentLabel": "Content",
+      "titlePlaceholder": "What would you like to discuss?",
+      "contentPlaceholder": "Share your thoughts...",
+      "cancel": "Cancel",
+      "creating": "Creating...",
+      "createDiscussion": "Create Discussion"
+    },
+    "discussionEmptyState": {
+      "title": "No discussions yet",
+      "subtitle": "Be the first to start a discussion about this movie!",
+      "startDiscussion": "Start Discussion"
+    }
   }
 }

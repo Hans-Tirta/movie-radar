@@ -3,6 +3,7 @@ import { verifyToken } from "../middleware/authMiddleware";
 import {
   createComment,
   getCommentsByDiscussion,
+  getCommentById,
   updateComment,
   deleteComment,
   voteOnComment,
@@ -12,6 +13,7 @@ const commentRouter = express.Router();
 
 // Public routes
 commentRouter.get("/discussion/:discussionId", getCommentsByDiscussion); // GET /api/comments/discussion/abc123
+commentRouter.get("/:commentId", getCommentById);
 
 // Protected routes
 commentRouter.post("/", verifyToken, createComment); // POST /api/comments

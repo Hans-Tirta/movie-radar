@@ -98,7 +98,18 @@
     "language": "语言",
     "original": "原名",
     "votes": "票",
-    "noImage": "无图片"
+    "noImage": "无图片",
+    "byUser": "由 {{username}} 发布",
+    "votesCount": "{{count}} 票",
+    "commentsCount": "{{count}} 条评论",
+    "discussions": "讨论",
+    "viewAllDiscussions": "查看全部",
+    "loadingDiscussions": "正在加载讨论...",
+    "discussionsCount": "讨论",
+    "recentActivity": "近期活动",
+    "noDiscussions": "暂无讨论",
+    "startDiscussion": "成为第一个关于这部电影发起讨论的人！",
+    "createFirstDiscussion": "开始讨论"
   },
   "logout": {
     "title": "登出选项",
@@ -166,5 +177,64 @@
     "failedToUpdatePassword": "更新密码失败",
     "failedToDeleteProfile": "删除个人资料失败",
     "failedToLoadProfile": "加载个人资料失败"
+  },
+  "discussion": {
+    "loadingDiscussions": "正在加载讨论...",
+    "back_to_discussions": "返回讨论",
+    "sort_by": "排序方式：",
+    "sort_newest": "最新",
+    "sort_oldest": "最早",
+    "sort_most_upvoted": "最多点赞",
+    "comments_title": "评论",
+    "loading_comments": "正在加载评论...",
+    "no_comments": "暂无评论",
+    "prompt_logged_in": "成为第一个发表评论的人！",
+    "prompt_logged_out": "请登录以参与讨论。",
+    "by_user": "由 {{username}} 发布",
+    "comments_count": "条评论",
+    "add_comment": "添加评论",
+    "placeholder_comment": "分享你的想法...",
+    "posting": "正在发布...",
+    "post": "发布评论",
+    "placeholder_reply": "写下回复...",
+    "sending": "正在发送...",
+    "reply": "回复",
+    "replies_count": "{{count}} 条回复",
+    "show_replies": "显示回复",
+    "hide_replies": "隐藏回复"
+  },
+  "movieDiscussions": {
+    "newDiscussion": "新讨论",
+    "goBack": "返回",
+    "loadingDiscussions": "加载讨论中...",
+    "movieDiscussionHeader": {
+      "backToMovie": "返回电影",
+      "discussions": "讨论 ({{count}})"
+    },
+    "discussionSortControl": {
+      "sortBy": "排序方式",
+      "newest": "最新",
+      "oldest": "最早",
+      "mostUpvoted": "最多赞"
+    },
+    "discussionList": {
+      "by": "发布者",
+      "comments": "评论"
+    },
+    "createDiscussionModal": {
+      "title": "新讨论",
+      "titleLabel": "标题",
+      "contentLabel": "内容",
+      "titlePlaceholder": "您想讨论什么？",
+      "contentPlaceholder": "分享您的想法...",
+      "cancel": "取消",
+      "creating": "创建中...",
+      "createDiscussion": "创建讨论"
+    },
+    "discussionEmptyState": {
+      "title": "暂无讨论",
+      "subtitle": "成为第一个讨论这部电影的人！",
+      "startDiscussion": "开始讨论"
+    }
   }
 }

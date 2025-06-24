@@ -98,7 +98,18 @@
     "language": "Bahasa",
     "original": "Asli",
     "votes": "suara",
-    "noImage": "Gambar Tidak Tersedia"
+    "noImage": "Gambar Tidak Tersedia",
+    "byUser": "oleh {{username}}",
+    "votesCount": "{{count}} suara",
+    "commentsCount": "{{count}} komentar",
+    "discussions": "Diskusi",
+    "viewAllDiscussions": "Lihat Semua",
+    "loadingDiscussions": "Memuat diskusi...",
+    "discussionsCount": "diskusi",
+    "recentActivity": "Aktivitas Terbaru",
+    "noDiscussions": "Belum ada diskusi",
+    "startDiscussion": "Jadilah yang pertama memulai percakapan tentang film ini!",
+    "createFirstDiscussion": "Mulai Diskusi"
   },
   "logout": {
     "title": "Opsi Logout",
@@ -166,5 +177,64 @@
     "failedToUpdatePassword": "Gagal memperbarui kata sandi",
     "failedToDeleteProfile": "Gagal menghapus profil",
     "failedToLoadProfile": "Gagal memuat profil"
+  },
+  "discussion": {
+    "loadingDiscussions": "Memuat diskusi...",
+    "back_to_discussions": "Kembali ke Diskusi",
+    "sort_by": "Urutkan berdasarkan:",
+    "sort_newest": "Terbaru",
+    "sort_oldest": "Terlama",
+    "sort_most_upvoted": "Paling Disukai",
+    "comments_title": "Komentar",
+    "loading_comments": "Memuat komentar...",
+    "no_comments": "Belum ada komentar",
+    "prompt_logged_in": "Jadilah yang pertama berkomentar!",
+    "prompt_logged_out": "Masuk untuk bergabung dalam diskusi.",
+    "by_user": "oleh {{username}}",
+    "comments_count": "komentar",
+    "add_comment": "Tambahkan Komentar",
+    "placeholder_comment": "Bagikan pendapatmu...",
+    "posting": "Mengirim...",
+    "post": "Kirim Komentar",
+    "placeholder_reply": "Tulis balasan...",
+    "sending": "Mengirim...",
+    "reply": "Balas",
+    "replies_count": "{{count}} balasan",
+    "show_replies": "Tampilkan balasan",
+    "hide_replies": "Sembunyikan balasan"
+  },
+  "movieDiscussions": {
+    "newDiscussion": "Diskusi Baru",
+    "goBack": "Kembali",
+    "loadingDiscussions": "Memuat diskusi...",
+    "movieDiscussionHeader": {
+      "backToMovie": "Kembali ke Film",
+      "discussions": "Diskusi ({{count}})"
+    },
+    "discussionSortControl": {
+      "sortBy": "Urutkan berdasarkan",
+      "newest": "Terbaru",
+      "oldest": "Terlama",
+      "mostUpvoted": "Paling Banyak Disukai"
+    },
+    "discussionList": {
+      "by": "oleh",
+      "comments": "komentar"
+    },
+    "createDiscussionModal": {
+      "title": "Diskusi Baru",
+      "titleLabel": "Judul",
+      "contentLabel": "Konten",
+      "titlePlaceholder": "Apa yang ingin Anda diskusikan?",
+      "contentPlaceholder": "Bagikan pemikiran Anda...",
+      "cancel": "Batal",
+      "creating": "Membuat...",
+      "createDiscussion": "Buat Diskusi"
+    },
+    "discussionEmptyState": {
+      "title": "Belum ada diskusi",
+      "subtitle": "Jadilah yang pertama memulai diskusi tentang film ini!",
+      "startDiscussion": "Mulai Diskusi"
+    }
   }
 }

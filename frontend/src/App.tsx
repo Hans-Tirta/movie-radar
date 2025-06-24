@@ -12,6 +12,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { MovieProvider } from "./contexts/MovieContext";
 import { AuthProvider } from "./contexts/AuthContext";
+import MovieDiscussions from "./pages/MovieDiscussions";
+import SingleDiscussion from "./pages/SingleDiscussion";
 
 function App() {
   const location = useLocation();
@@ -37,6 +39,14 @@ function App() {
                 <Route path="/favorites" element={<Favorites />} />
                 <Route path="/logout" element={<Logout />} />
                 <Route path="/movie/:id" element={<MovieDetail />} />
+                <Route
+                  path="/movie/:id/discussions"
+                  element={<MovieDiscussions />}
+                />
+                <Route
+                  path="/movie/:id/discussions/:discussionId"
+                  element={<SingleDiscussion />}
+                />
               </Route>
 
               {/* Redirect any unknown routes to login */}

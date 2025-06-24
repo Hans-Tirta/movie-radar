@@ -29,7 +29,7 @@ interface APIResponse {
   total_results: number;
 }
 
-interface MovieDetails {
+export interface MovieDetails {
   id: number;
   title: string;
   original_title: string;
