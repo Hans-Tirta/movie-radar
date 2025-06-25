@@ -8,6 +8,7 @@ import {
   updateDiscussion,
   deleteDiscussion,
   voteOnDiscussion,
+  softDeleteUserContent
 } from "../controllers/discussionController";
 
 const router = express.Router();
@@ -22,5 +23,6 @@ router.post("/", verifyToken, createDiscussion); // POST /api/discussions
 router.put("/:discussionId", verifyToken, updateDiscussion); // PUT /api/discussions/abc123
 router.delete("/:discussionId", verifyToken, deleteDiscussion); // DELETE /api/discussions/abc123
 router.post("/:discussionId/vote", verifyToken, voteOnDiscussion); // POST /api/discussions/abc123/vote
+router.delete("/user/:userId/soft-delete", softDeleteUserContent); // DELETE /api/discussions/user/:userId/soft-delete
 
 export default router;

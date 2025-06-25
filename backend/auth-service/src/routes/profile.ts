@@ -144,12 +144,36 @@ async function deleteFavoritesForUser(userId: string): Promise<void> {
   }
 }
 
+// Helper function to delete user discussions via HTTP call
+async function softDeleteDiscussionsForUser(userId: string): Promise<void> {
+  try {
+    const discussionServiceUrl =
+      process.env.DISCUSSION_SERVICE_URL || "http://localhost:5003";
+
+    const response = await fetch(
+      `${discussionServiceUrl}/api/discussions/user/${userId}/soft-delete`,
+      {
+        method: "DELETE",
+      }
+    );
+
+    if (!response.ok) {
+      console.error(
+        `Failed to soft delete discussions for user ${userId}: ${response.statusText}`
+      );
+    }
+  } catch (error) {
+    console.error(`Error soft deleting discussions for user ${userId}:`, error);
+  }
+}
+
 // Delete profile endpoint
 router.delete("/", verifyToken, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.userId;
 
-    // First, delete user's favorites in the separate service
+    // First, delete user's discussions & favorites in the separate service
+    await softDeleteDiscussionsForUser(userId);
     await deleteFavoritesForUser(userId);
 
     // Then delete the user from auth database

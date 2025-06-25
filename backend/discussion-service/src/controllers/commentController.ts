@@ -2,12 +2,13 @@ import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import prisma from "../db";
 import { VoteType } from "@prisma/client";
+import { getUserInfo } from "../utils/getUserInfo";
 
 // Create a new comment
 export const createComment = asyncHandler(
   async (req: Request, res: Response) => {
     const { content, discussionId, parentId } = req.body;
-    const { userId, username } = req.user!;
+    const { userId } = req.user!;
 
     if (!content || !discussionId) {
       res
@@ -48,7 +49,6 @@ export const createComment = asyncHandler(
         content,
         discussionId,
         userId,
-        username,
         ...(parentId && { parentId }),
       },
       include: {
@@ -66,7 +66,9 @@ export const createComment = asyncHandler(
       },
     });
 
-    res.status(201).json(comment);
+    const { username } = await getUserInfo(comment.userId);
+
+    res.status(201).json({ ...comment, username });
   }
 );
 
@@ -144,8 +146,16 @@ export const getCommentsByDiscussion = asyncHandler(
       },
     });
 
+    const allComments = [...topLevelComments, ...replies];
+    const commentsWithUsernames = await Promise.all(
+      allComments.map(async (comment) => {
+        const { username } = await getUserInfo(comment.userId);
+        return { ...comment, username };
+      })
+    );
+
     res.json({
-      comments: [...topLevelComments, ...replies], // top-level are sorted
+      comments: commentsWithUsernames,
       totalPages: Math.ceil(totalTopLevel / limit),
       totalCount: totalTopLevel,
     });
@@ -181,7 +191,7 @@ export const getCommentById = asyncHandler(
           select: {
             id: true,
             content: true,
-            username: true,
+            userId: true,
             createdAt: true,
           },
         },
@@ -196,7 +206,47 @@ export const getCommentById = asyncHandler(
       return;
     }
 
-    res.json(comment);
+    // Add username to main comment
+    const mainUsername = await getUserInfo(comment.userId);
+
+    // Add username to parent if exists
+    let enrichedParent = null;
+    if (comment.parent) {
+      const parentUsername = await getUserInfo(comment.parent.userId);
+      enrichedParent = {
+        ...comment.parent,
+        username: parentUsername.username,
+      };
+    }
+
+    // Recursive helper to add username to deeply nested replies
+    const enrichReplies = async (replies: any[]): Promise<any[]> => {
+      return Promise.all(
+        replies.map(async (reply) => {
+          const username = (await getUserInfo(reply.userId)).username;
+
+          let nested = reply.replies;
+          if (nested && nested.length > 0) {
+            nested = await enrichReplies(nested);
+          }
+
+          return {
+            ...reply,
+            username,
+            replies: nested,
+          };
+        })
+      );
+    };
+
+    const enrichedReplies = await enrichReplies(comment.replies);
+
+    res.json({
+      ...comment,
+      username: mainUsername.username,
+      parent: enrichedParent,
+      replies: enrichedReplies,
+    });
   }
 );
 
@@ -417,8 +467,15 @@ export const getCommentReplies = asyncHandler(
       where: { parentId: commentId },
     });
 
+    const repliesWithUsernames = await Promise.all(
+      replies.map(async (reply) => {
+        const { username } = await getUserInfo(reply.userId);
+        return { ...reply, username };
+      })
+    );
+
     res.json({
-      replies,
+      replies: repliesWithUsernames,
       pagination: {
         page,
         limit,

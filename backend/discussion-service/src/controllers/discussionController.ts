@@ -2,12 +2,24 @@ import { Request, Response } from "express";
 import asyncHandler from "express-async-handler";
 import prisma from "../db";
 import { DiscussionCategory, VoteType } from "@prisma/client";
+import { getUserInfo } from "../utils/getUserInfo";
+
+async function enrichDiscussionsWithUsernames(discussions: any[]) {
+  // Fetch username for each discussion in parallel
+  const enriched = await Promise.all(
+    discussions.map(async (discussion) => {
+      const { username } = await getUserInfo(discussion.userId);
+      return { ...discussion, username };
+    })
+  );
+  return enriched;
+}
 
 // Create a new discussion
 export const createDiscussion = asyncHandler(
   async (req: Request, res: Response) => {
     const { title, content, category = "GENERAL", movieId } = req.body;
-    const { userId, username } = req.user!;
+    const { userId } = req.user!;
 
     if (!title || !content || !movieId) {
       res.status(400).json({
@@ -23,7 +35,6 @@ export const createDiscussion = asyncHandler(
         category: category as DiscussionCategory,
         movieId: parseInt(movieId),
         userId,
-        username,
       },
       include: {
         _count: {
@@ -32,7 +43,9 @@ export const createDiscussion = asyncHandler(
       },
     });
 
-    res.status(201).json(discussion);
+    const { username } = await getUserInfo(discussion.userId);
+
+    res.status(201).json({ ...discussion, username });
   }
 );
 
@@ -53,17 +66,17 @@ export const getDiscussionsByMovie = asyncHandler(
       orderBy = { upvotes: "desc" };
     }
 
-    const discussions = await prisma.discussion.findMany({
+    let discussions = await prisma.discussion.findMany({
       where: { movieId: parseInt(movieId) },
       include: {
-        _count: {
-          select: { comments: true },
-        },
+        _count: { select: { comments: true } },
       },
       orderBy,
       skip,
       take: limit,
     });
+
+    discussions = await enrichDiscussionsWithUsernames(discussions);
 
     const total = await prisma.discussion.count({
       where: { movieId: parseInt(movieId) },
@@ -107,10 +120,14 @@ export const getAllDiscussions = asyncHandler(
       take: limit,
     });
 
+    const enrichedDiscussions = await enrichDiscussionsWithUsernames(
+      discussions
+    );
+
     const total = await prisma.discussion.count();
 
     res.json({
-      discussions,
+      enrichedDiscussions,
       pagination: {
         page,
         limit,
@@ -140,7 +157,9 @@ export const getDiscussionById = asyncHandler(
       return;
     }
 
-    res.json(discussion);
+    const { username } = await getUserInfo(discussion.userId);
+
+    res.json({ ...discussion, username });
   }
 );
 
@@ -181,7 +200,9 @@ export const updateDiscussion = asyncHandler(
       },
     });
 
-    res.json(updatedDiscussion);
+    const { username } = await getUserInfo(updatedDiscussion.userId);
+
+    res.json({ ...updatedDiscussion, username });
   }
 );
 
@@ -299,5 +320,112 @@ export const voteOnDiscussion = asyncHandler(
     });
 
     res.json(result);
+  }
+);
+
+// Soft delete discussions/comments for a deleted user
+export const softDeleteUserContent = asyncHandler(
+  async (req: Request, res: Response) => {
+    const { userId } = req.params;
+
+    await prisma.$transaction(async (tx) => {
+      // 1. Soft-delete Discussions by user
+      await tx.discussion.updateMany({
+        where: { userId },
+        data: {
+          title: "[Deleted]",
+          content: "[This discussion has been deleted]",
+        },
+      });
+
+      // 2. Soft-delete Comments by user
+      await tx.comment.updateMany({
+        where: { userId },
+        data: {
+          content: "[This comment has been deleted]",
+        },
+      });
+
+      // 3. Delete DiscussionVotes by user
+      await tx.discussionVote.deleteMany({
+        where: { userId },
+      });
+
+      // 4. Delete CommentVotes by user
+      await tx.commentVote.deleteMany({
+        where: { userId },
+      });
+
+      // 5. Recalculate upvotes/downvotes on affected Discussions
+      const affectedDiscussionIds = await tx.discussion
+        .findMany({
+          where: { userId },
+          select: { id: true },
+        })
+        .then((results) => results.map((d) => d.id));
+
+      // Also get discussions voted by the user (if any)
+      const votedDiscussionIds = await tx.discussionVote
+        .findMany({
+          where: { userId },
+          select: { discussionId: true },
+        })
+        .then((results) => results.map((v) => v.discussionId));
+
+      const allDiscussionIds = Array.from(
+        new Set([...affectedDiscussionIds, ...votedDiscussionIds])
+      );
+
+      for (const discussionId of allDiscussionIds) {
+        const upvotes = await tx.discussionVote.count({
+          where: { discussionId, voteType: "UPVOTE" },
+        });
+        const downvotes = await tx.discussionVote.count({
+          where: { discussionId, voteType: "DOWNVOTE" },
+        });
+
+        await tx.discussion.update({
+          where: { id: discussionId },
+          data: { upvotes, downvotes },
+        });
+      }
+
+      // 6. Recalculate upvotes/downvotes on affected Comments
+      const affectedCommentIds = await tx.comment
+        .findMany({
+          where: { userId },
+          select: { id: true },
+        })
+        .then((results) => results.map((c) => c.id));
+
+      const votedCommentIds = await tx.commentVote
+        .findMany({
+          where: { userId },
+          select: { commentId: true },
+        })
+        .then((results) => results.map((v) => v.commentId));
+
+      const allCommentIds = Array.from(
+        new Set([...affectedCommentIds, ...votedCommentIds])
+      );
+
+      for (const commentId of allCommentIds) {
+        const upvotes = await tx.commentVote.count({
+          where: { commentId, voteType: "UPVOTE" },
+        });
+        const downvotes = await tx.commentVote.count({
+          where: { commentId, voteType: "DOWNVOTE" },
+        });
+
+        await tx.comment.update({
+          where: { id: commentId },
+          data: { upvotes, downvotes },
+        });
+      }
+    });
+
+    res.status(200).json({
+      message: "User content soft-deleted and vote counts updated",
+    });
   }
 );

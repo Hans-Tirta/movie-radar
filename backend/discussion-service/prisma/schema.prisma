@@ -18,59 +18,41 @@ model Discussion {
   title     String
   content   String
   category  DiscussionCategory @default(GENERAL)
-  
-  // Movie context
-  movieId   Int      // TMDB movie ID
-  
-  // User context (we'll store userId from auth service)
+  movieId   Int
   userId    String
-  username  String   // Denormalized for performance
-  
-  // Engagement
+
   upvotes   Int      @default(0)
   downvotes Int      @default(0)
-  
-  // Timestamps
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  
-  // Relations
+
   comments  Comment[]
   votes     DiscussionVote[]
-  
+
   @@map("Discussion")
 }
 
 model Comment {
   id           String   @id @default(cuid())
   content      String
-  
-  // Relations
   discussionId String
   discussion   Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
-  
-  // User context
   userId       String
-  username     String   // Denormalized for performance
-  
-  // Nested comments (self-referential)
+
   parentId     String?
   parent       Comment? @relation("CommentReplies", fields: [parentId], references: [id])
   replies      Comment[] @relation("CommentReplies")
-  
-  // Engagement
+
   upvotes      Int      @default(0)
   downvotes    Int      @default(0)
-  
-  // Timestamps
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
-  
-  // Relations
+
   votes        CommentVote[]
-  
+
   @@map("Comment")
 }
+
 
 model DiscussionVote {
   id           String     @id @default(cuid())

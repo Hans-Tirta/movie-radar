@@ -234,6 +234,30 @@ router.post("/logout-all", async (req: Request, res: Response) => {
   }
 });
 
+// GET /api/auth/user/:id - Get user info by ID (for internal use)
+router.get("/user/:id", async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+      },
+    });
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    res.status(200).json({ user });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 router.post('/validate-token', validateTokenEndpoint);
 
 export default router;
