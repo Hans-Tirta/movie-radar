@@ -1,7 +1,8 @@
 import { AuthAPI } from "../contexts/AuthContext";
+import i18n from "../i18n";
 
 const DISCUSSION_BASE_URL =
-  import.meta.env.VITE_DISCUSSION_BASE_URL || "http://localhost:5003";
+  import.meta.env.VITE_DISCUSSION_URL || "http://localhost:5003";
 
 export interface Discussion {
   id: string;
@@ -49,6 +50,28 @@ export interface CreateCommentData {
   discussionId: string;
   parentId?: string;
 }
+
+export interface DiscussionWithMovie extends Discussion {
+  movie?: {
+    id: number;
+    title: string;
+    poster_path: string | null;
+    release_date: string;
+  };
+}
+
+// Helper function to get current language and map to TMDB format
+const getTMDBLanguage = (): string => {
+  const currentLang = i18n.language || "en";
+
+  const languageMap: { [key: string]: string } = {
+    en: "en-US",
+    id: "id-ID",
+    cn: "zh-CN",
+  };
+
+  return languageMap[currentLang] || "en-US";
+};
 
 // Get discussions for a specific movie
 export const getMovieDiscussions = async (
@@ -212,4 +235,32 @@ export const voteOnComment = async (
   }
 
   return await res.json();
+};
+
+// Get recent discussions across all movies
+export const getRecentDiscussions = async (
+  page: number = 1,
+  limit: number = 10,
+  sortBy: "newest" | "oldest" | "most_upvoted" = "newest"
+): Promise<{
+  discussions: DiscussionWithMovie[];
+  totalPages: number;
+  totalCount: number;
+}> => {
+  try {
+    const language = getTMDBLanguage();
+
+    const response = await fetch(
+      `${DISCUSSION_BASE_URL}/api/discussions/recent?page=${page}&limit=${limit}&sortBy=${sortBy}&lang=${language}`
+    );
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error fetching recent discussions:", error);
+    throw new Error("Failed to fetch recent discussions");
+  }
 };

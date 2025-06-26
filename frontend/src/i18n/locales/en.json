@@ -3,6 +3,7 @@
     "brand": "MovieRadar",
     "home": "Home",
     "favorites": "Favorites",
+    "discussions": "Discussions",
     "search_placeholder": "Search movies...",
     "profile": "Profile",
     "logout": "Logout"
@@ -236,5 +237,23 @@
       "subtitle": "Be the first to start a discussion about this movie!",
       "startDiscussion": "Start Discussion"
     }
+  },
+  "global": {
+    "loading": "Loading discussions...",
+    "error_fetching": "Failed to fetch discussions",
+    "try_again": "Try Again",
+    "recent_discussions": "Recent Discussions",
+    "description": "Discover the latest movie discussions from the community",
+    "total_discussions": "{{count}} total discussions",
+    "sort_by": "Sort by:",
+    "sort_newest": "Newest First",
+    "sort_oldest": "Oldest First",
+    "sort_upvoted": "Most Upvoted",
+    "comments": "comments",
+    "no_discussions": "No Discussions Yet",
+    "start_one": "Be the first to start a discussion about your favorite movies!",
+    "browse_movies": "Browse Movies",
+    "previous": "Previous",
+    "next": "Next"
   }
 }

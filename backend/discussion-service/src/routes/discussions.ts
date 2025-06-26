@@ -4,17 +4,19 @@ import {
   createDiscussion,
   getDiscussionsByMovie,
   getAllDiscussions,
+  getRecentDiscussions,
   getDiscussionById,
   updateDiscussion,
   deleteDiscussion,
   voteOnDiscussion,
-  softDeleteUserContent
+  softDeleteUserContent,
 } from "../controllers/discussionController";
 
 const router = express.Router();
 
 // Public routes (no auth required)
 router.get("/", getAllDiscussions); // GET /api/discussions - general feed
+router.get("/recent", getRecentDiscussions); // GET /api/discussions/recent - recent discussions
 router.get("/movie/:movieId", getDiscussionsByMovie); // GET /api/discussions/movie/123
 router.get("/:discussionId", getDiscussionById); // GET /api/discussions/abc123
 

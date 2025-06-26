@@ -3,6 +3,7 @@
     "brand": "MovieRadar",
     "home": "首页",
     "favorites": "收藏",
+    "discussions": "讨论",
     "search_placeholder": "搜索电影...",
     "profile": "个人资料",
     "logout": "退出"
@@ -236,5 +237,23 @@
       "subtitle": "成为第一个讨论这部电影的人！",
       "startDiscussion": "开始讨论"
     }
+  },
+  "global": {
+    "loading": "正在加载讨论...",
+    "error_fetching": "获取讨论失败",
+    "try_again": "重试",
+    "recent_discussions": "最新讨论",
+    "description": "探索社区最新的电影讨论",
+    "total_discussions": "共 {{count}} 条讨论",
+    "sort_by": "排序方式：",
+    "sort_newest": "最新优先",
+    "sort_oldest": "最旧优先",
+    "sort_upvoted": "最多点赞",
+    "comments": "条评论",
+    "no_discussions": "暂无讨论",
+    "start_one": "成为第一个发起你喜爱电影讨论的人！",
+    "browse_movies": "浏览电影",
+    "previous": "上一页",
+    "next": "下一页"
   }
 }

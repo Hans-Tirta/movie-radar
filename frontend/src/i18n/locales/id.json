@@ -3,6 +3,7 @@
     "brand": "MovieRadar",
     "home": "Beranda",
     "favorites": "Favorit",
+    "discussions": "Diskusi",
     "search_placeholder": "Cari film...",
     "profile": "Profil",
     "logout": "Keluar"
@@ -236,5 +237,23 @@
       "subtitle": "Jadilah yang pertama memulai diskusi tentang film ini!",
       "startDiscussion": "Mulai Diskusi"
     }
+  },
+  "global": {
+    "loading": "Memuat diskusi...",
+    "error_fetching": "Gagal mengambil data diskusi",
+    "try_again": "Coba Lagi",
+    "recent_discussions": "Diskusi Terbaru",
+    "description": "Temukan diskusi film terbaru dari komunitas",
+    "total_discussions": "{{count}} total diskusi",
+    "sort_by": "Urutkan berdasarkan:",
+    "sort_newest": "Terbaru",
+    "sort_oldest": "Terlama",
+    "sort_upvoted": "Paling Disukai",
+    "comments": "komentar",
+    "no_discussions": "Belum Ada Diskusi",
+    "start_one": "Jadilah yang pertama memulai diskusi tentang film favoritmu!",
+    "browse_movies": "Jelajahi Film",
+    "previous": "Sebelumnya",
+    "next": "Berikutnya"
   }
 }

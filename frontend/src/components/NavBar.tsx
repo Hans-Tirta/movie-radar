@@ -104,6 +104,16 @@ function NavBar(): JSX.Element {
             >
               {t("navbar.favorites")}
             </Link>
+            <Link
+              to="/discussions"
+              className={`hover:text-blue-400 font-medium transition-colors relative ${
+                isActiveLink("/discussions")
+                  ? "text-blue-400 after:absolute after:bottom-[-8px] after:left-0 after:right-0 after:h-0.5 after:bg-blue-400"
+                  : "text-gray-300"
+              }`}
+            >
+              {t("navbar.discussions")}
+            </Link>
           </div>
         </div>
         <div className="flex items-center space-x-4">
@@ -117,7 +127,7 @@ function NavBar(): JSX.Element {
                   <input
                     type="text"
                     placeholder={t("navbar.search_placeholder")}
-                    className="w-64 pl-10 pr-4 py-2 rounded-l-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none transition-all"
+                    className="w-60 pl-10 pr-4 py-2 rounded-l-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none transition-all"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
@@ -241,6 +251,17 @@ function NavBar(): JSX.Element {
               onClick={() => setIsOpen(false)}
             >
               {t("navbar.favorites")}
+            </Link>
+            <Link
+              to="/discussions"
+              className={`text-xl font-medium transition-colors ${
+                isActiveLink("/discussions")
+                  ? "text-blue-400"
+                  : "text-gray-300 hover:text-blue-400"
+              }`}
+              onClick={() => setIsOpen(false)}
+            >
+              {t("navbar.discussions")}
             </Link>
 
             {/* Mobile User Section */}

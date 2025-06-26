@@ -14,6 +14,7 @@ import { MovieProvider } from "./contexts/MovieContext";
 import { AuthProvider } from "./contexts/AuthContext";
 import MovieDiscussions from "./pages/MovieDiscussions";
 import SingleDiscussion from "./pages/SingleDiscussion";
+import GlobalDiscussions from "./pages/GlobalDiscussions";
 
 function App() {
   const location = useLocation();
@@ -37,6 +38,7 @@ function App() {
                 <Route path="/search" element={<Search />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/favorites" element={<Favorites />} />
+                <Route path="/discussions" element={<GlobalDiscussions />} />
                 <Route path="/logout" element={<Logout />} />
                 <Route path="/movie/:id" element={<MovieDetail />} />
                 <Route
